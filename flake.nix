@@ -11,6 +11,11 @@
     # Keep Hyprland's nixpkgs independent: its master package set provides the
     # guiutils override used by the NixOS desktop configuration.
     hyprland.url = "github:hyprwm/Hyprland";
+    hyprmod = {
+      # Pinned unstable has 0.4.0; upstream includes Hyprland 0.57 fixes.
+      url = "github:BlueManCZ/hyprmod";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
 
     stylix = {
       url = "github:danth/stylix/release-26.05";

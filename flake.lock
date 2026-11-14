@@ -707,6 +707,26 @@
         "type": "github"
       }
     },
+    "hyprmod": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794676271,
+        "narHash": "sha256-ZUk0F7USY0kW94IedKYIPf5J3E5xxwd3rnBCy9PwDo0=",
+        "owner": "BlueManCZ",
+        "repo": "hyprmod",
+        "rev": "ac65c564fefbe051d83831e1a5f5adedf4e98ddc",
+        "type": "github"
+      },
+      "original": {
+        "owner": "BlueManCZ",
+        "repo": "hyprmod",
+        "type": "github"
+      }
+    },
     "hyprtoolkit": {
       "inputs": {
         "aquamarine": [
@@ -1100,6 +1120,7 @@
         "homebrew-cask": "homebrew-cask",
         "homebrew-core": "homebrew-core",
         "hyprland": "hyprland",
+        "hyprmod": "hyprmod",
         "mattpocock-skills": "mattpocock-skills",
         "nix-homebrew": "nix-homebrew",
         "nixpkgs": "nixpkgs_2",

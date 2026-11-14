@@ -1,6 +1,7 @@
 {
   pkgs,
   unstablePkgs,
+  inputs,
   ...
 }: {
   home.packages = with pkgs; [
@@ -39,6 +40,7 @@
     satty
     hyprpicker
     hyprsunset
+    inputs.hyprmod.packages.${pkgs.stdenv.hostPlatform.system}.default
     yubikey-manager
     yubioath-flutter
   ];
