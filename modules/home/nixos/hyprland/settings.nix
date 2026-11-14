@@ -64,10 +64,13 @@ in {
       decoration = {
         rounding = 8;
         rounding_power = 2;
+        active_opacity = 0.96;
+        inactive_opacity = 0.92;
+        fullscreen_opacity = 1.0;
         blur = {
           enabled = true;
-          size = 3;
-          passes = 2;
+          size = 6;
+          passes = 3;
           vibrancy = 0.1696;
           ignore_opacity = true;
           new_optimizations = true;

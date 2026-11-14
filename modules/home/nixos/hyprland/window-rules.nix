@@ -88,6 +88,7 @@ in {
     (rule {title = "^(Picture-in-Picture)$";} {pin = true;})
     (rule {title = "^(Picture-in-Picture)$";} {keep_aspect_ratio = true;})
     (rule {tag = "games*";} {no_blur = true;})
+    (rule {tag = "games*";} {opacity = "1.0 override 1.0 override 1.0 override";})
     (rule {tag = "games*";} {fullscreen = true;})
   ];
 }
