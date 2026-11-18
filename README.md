@@ -91,6 +91,13 @@ nix build --no-link --no-update-lock-file .#darwinConfigurations.macbook.config.
 # Linux: nixosConfigurations.nixos.config.home-manager.users.mitra.private.claudeAgentsCheck
 ```
 
+## Xbox controller firmware (NixOS)
+
+Run `xbox-firmware-vm wizard` for an isolated Windows maintenance VM and
+guarded, dedicated-port USB handoff to official Xbox Accessories. Windows setup,
+physical reconnect tests and update confirmation remain manual. See
+[setup, safety boundaries and recovery](docs/xbox-firmware-vm.md).
+
 ## Cleanup and recovery (NixOS)
 
 `ncg` removes user and sudo/root profile generations older than 15 days,
