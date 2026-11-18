@@ -9,12 +9,7 @@
       name: {
         inherit name;
         value =
-          if name == "sequential-thinking"
-          then {
-            command = "npx";
-            args = ["-y" catalog.${name}.package];
-          }
-          else if name == "appium-mcp"
+          if name == "appium-mcp"
           then {
             command = "${config.home.profileDirectory}/bin/npx";
             args = ["-y" catalog.${name}.package];

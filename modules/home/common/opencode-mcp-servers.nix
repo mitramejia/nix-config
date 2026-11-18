@@ -2,18 +2,11 @@
   mcp = import ./mcp-servers.nix;
   catalog = mcp.catalog;
   servers = lib.genAttrs mcp.membership.opencode (
-    name:
-      if name == "sequential-thinking"
-      then {
-        command = "npx";
-        args = ["-y" catalog.${name}.package];
-        enabled = true;
-      }
-      else {
-        type = "remote";
-        url = catalog.${name}.url;
-        enabled = true;
-      }
+    name: {
+      type = "remote";
+      url = catalog.${name}.url;
+      enabled = true;
+    }
   );
 in rec {
   homeManager =
