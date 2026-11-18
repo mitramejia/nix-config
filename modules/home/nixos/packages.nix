@@ -9,6 +9,8 @@
     slack
     zoom-us
     thunderbird
+    # Aerion is not available in the pinned stable package set.
+    unstablePkgs.aerion
     localsend
     virtualbox
     trimage
@@ -22,8 +24,13 @@
     vlc
     trash-cli
     alpine
+    inputs.rencal.packages.${pkgs.stdenv.hostPlatform.system}.default
     code-cursor
     jetbrains-toolbox
+    (callPackage ./xtool.nix {})
+    # Swift 6.4 packages SwiftPM separately; xtool needs swift sdk/build.
+    unstablePkgs.swiftpm
+    libimobiledevice
     chromedriver
     amdgpu_top
 

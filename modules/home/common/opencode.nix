@@ -93,6 +93,7 @@
       seed =
         {
           "$schema" = "https://opencode.ai/config.json";
+          default_agent = "planner";
           plugins = platform.opencode.plugins;
           mcp = mcpServers;
         }
@@ -190,6 +191,8 @@
         }
       }
       config.$schema = entry.seed.$schema;
+      // Keep the primary agent consistent for existing configs, not just new seeds.
+      if (entry.name === "opencode.json") config.default_agent = entry.seed.default_agent;
       delete config.plugin;
       const removed = new Set(entry.removePlugins ?? []);
       const replacedPrefixes = entry.replacePluginPrefixes ?? [];
@@ -250,12 +253,14 @@
         const opencode = JSON.parse(fs.readFileSync("fixture/opencode.json"));
          const tui = JSON.parse(fs.readFileSync("fixture/cli.json"));
         assert.deepEqual(opencode, intent[0].seed);
+        assert.equal(opencode.default_agent, "planner");
         assert.deepEqual(tui, intent[1].seed);
       '
       node -e '
         const fs = require("fs");
         fs.writeFileSync("fixture/opencode.json", JSON.stringify({
           model: "user-model",
+          default_agent: "build",
           permission: {"*": "ask"},
            plugins: [{package: "object-plugin@1", options: {keep: true}}],
            plugin: [["user-plugin@1", {keep: "tuple"}]],
@@ -296,6 +301,7 @@
         const opencode = JSON.parse(fs.readFileSync("fixture/opencode.json"));
          const tui = JSON.parse(fs.readFileSync("fixture/cli.json"));
         assert.equal(opencode.model, "user-model");
+        assert.equal(opencode.default_agent, "planner");
         assert.deepEqual(opencode.permission, {"*": "ask"});
          assert.deepEqual(opencode.plugins.find((p) => p.package === "user-plugin@1"), {package: "user-plugin@1", options: {keep: "tuple"}});
          assert.deepEqual(opencode.plugins.find((p) => p.package === "object-plugin@1"), {package: "object-plugin@1", options: {keep: true}});

@@ -17,6 +17,7 @@
       scale = 1.33;
       bitdepth = 10;
       cm = "srgb";
+      sdrbrightness = 1.1;
     }
     {
       output = "DP-2";
@@ -27,6 +28,7 @@
       transform = 3;
       bitdepth = 8;
       cm = "srgb";
+      sdrbrightness = 1.1;
     }
   ];
 

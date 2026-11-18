@@ -26,18 +26,11 @@ Other files under `~/.local/state/noctalia/` are runtime state such as notificat
 
 ## Activation behavior
 
-The Home Manager activation step copies the repo baseline into Noctalia's runtime settings file:
-
-```text
-modules/home/nixos/noctalia-settings.toml
-  -> ~/.local/state/noctalia/settings.toml
-```
-
-That means a rebuild or Home Manager activation can overwrite UI changes that have not been copied back into the repo.
+Home Manager activation updates the immutable config baseline, not the runtime settings file. Noctalia's mutable settings take precedence over that baseline and survive rebuilds; activation must not seed or overwrite them.
 
 ## Persisting UI changes
 
-After changing settings through the Noctalia UI, persist them back into the repo before rebuilding:
+To make the effective settings (baseline plus UI overrides) reproducible, export them back into the repo:
 
 ```bash
 persist-noctalia-settings modules/home/nixos/noctalia-settings.toml
@@ -49,8 +42,8 @@ Then review the diff:
 git diff -- modules/home/nixos/noctalia-settings.toml
 ```
 
-If the diff looks right, rebuild or switch as usual. Run the persist command before `fu` or `nh os switch` when you want to keep UI changes.
+If the diff looks right, rebuild or switch as usual. Exporting is optional for retaining local UI changes, but required to capture them in the repo baseline.
 
 ## Resetting to the repo baseline
 
-To discard UI-only changes, rebuild or activate Home Manager with the current repo baseline. The activation step will copy `modules/home/nixos/noctalia-settings.toml` back to `~/.local/state/noctalia/settings.toml`.
+To discard UI overrides, stop Noctalia, back up and remove `~/.local/state/noctalia/settings.toml`, then start Noctalia again. It will use the activated baseline. If the repo baseline has changed, switch first to activate it; rebuilding alone does not reset UI overrides.

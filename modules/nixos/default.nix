@@ -61,6 +61,7 @@ in {
     fstrim.enable = true;
     gvfs.enable = true;
     openssh.enable = true;
+    usbmuxd.enable = true;
     flatpak.enable = true;
     avahi = {
       enable = true;

@@ -1,6 +1,7 @@
 {
   inputs,
   pkgs,
+  unstablePkgs,
   ...
 }: let
   claudeCode = inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
@@ -43,38 +44,48 @@
       '';
   });
 in {
-  home.packages = with pkgs; [
-    cargo
-    rustc
-    ruby
-    jdk17
-    jq
-    uv
+  home.packages = with pkgs;
+    [
+      cargo
+      rustc
+      ruby
+      jdk17
+      jq
+      glab
+      uv
+      # Stable 2.34 lacks Agent Toolkit (introduced in 2.35).
+      unstablePkgs.awscli2
 
-    claudeCode
-    alejandra
-    statix
-    lazydocker
-    tmux
-    scmpuff070
-    act
-    actionlint
-    rtk
-    just
-    docker-compose
-    lmstudio
-    detekt
-    gradle
-    just-lsp
-    kotlin
-    kotlin-language-server
-    ktlint
-    sourcekit-lsp
-    swift
-    swift-format
-    swiftlint
-    watchman
+      claudeCode
+      alejandra
+      statix
+      lazydocker
+      tmux
+      scmpuff070
+      act
+      actionlint
+      rtk
+      just
+      docker-compose
+      lmstudio
+      detekt
+      gradle
+      just-lsp
+      kotlin
+      kotlin-language-server
+      ktlint
+      # xtool on Linux requires Swift 6.4; stable still provides Swift 5.10.
+      (
+        if stdenv.hostPlatform.isLinux
+        then unstablePkgs.swift
+        else swift
+      )
+      swift-format
+      swiftlint
+      watchman
 
-    doppler
-  ];
+      doppler
+    ]
+    # Linux Swift already includes its matching sourcekit-lsp.
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [sourcekit-lsp];
 }

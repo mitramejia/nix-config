@@ -1,10 +1,25 @@
+[audio]
+colorize_icons = false
+
 [bar.default]
+background_opacity = 0.0
+capsule = true
+capsule_border = "primary_container"
+capsule_border_width = 0.5
+capsule_opacity = 0.79999998211860657
+capsule_padding = 16.0
+capsule_thickness = 0.99999998137354851
 center = [ "media", "volume" ]
-end = [ "tray", "cpu", "temp", "ram", "notifications", "clock" ]
-margin_edge = 0
+compositor_blur = false
+end = [ "tray", "bar", "cpu", "temp", "ram", "sysmon", "notifications", "bar_2", "clock" ]
+font_family = "Inter"
+font_scale = 0.89999998733401299
+margin_edge = 8
 margin_ends = 0
+margin_opposite_edge = 8
 padding = 16
 radius = 0
+scale = 0.90000000596046448
 start = [ "session", "workspaces" ]
 thickness = 38
 widget_spacing = 16
@@ -53,9 +68,11 @@ widget_order = [
     [desktop_widgets.widget.desktop-widget-0000000000000002]
     box_height = 112.0
     box_width = 304.0
-    cx = 240.0
+    cx = 240.00001525878906
     cy = 232.0
     output = "DP-2"
+    placement_height = 2880.0
+    placement_width = 1620.0
     rotation = -0.0
     type = "sysmon"
 
@@ -71,6 +88,8 @@ widget_order = [
     cx = 1248.0
     cy = 368.0
     output = "DP-2"
+    placement_height = 2880.0
+    placement_width = 1620.0
     rotation = 0.0
     type = "audio_visualizer"
 
@@ -84,15 +103,19 @@ widget_order = [
     cx = 1248.0
     cy = 208.0
     output = "DP-2"
+    placement_height = 2880.0
+    placement_width = 1620.0
     rotation = 0.0
     type = "weather"
 
     [desktop_widgets.widget.desktop-widget-0000000000000005]
     box_height = 112.0
     box_width = 296.0
-    cx = 244.0
+    cx = 244.00001525878906
     cy = 376.0
     output = "DP-2"
+    placement_height = 2880.0
+    placement_width = 1620.0
     rotation = 0.0
     type = "sysmon"
 
@@ -103,15 +126,20 @@ widget_order = [
     [desktop_widgets.widget.desktop-widget-0000000000000006]
     box_height = 120.0
     box_width = 288.0
-    cx = 244.0
+    cx = 244.00001525878906
     cy = 536.0
     output = "DP-2"
+    placement_height = 2880.0
+    placement_width = 1620.0
     rotation = 0.0
     type = "sysmon"
 
         [desktop_widgets.widget.desktop-widget-0000000000000006.settings]
         stat = "ram_pct"
         stat2 = ""
+
+[dock]
+colorize_icons = false
 
 [keybinds]
 validate = [ "Return", "KP_Enter" ]
@@ -133,38 +161,90 @@ widget_order = [ "lockscreen-login-box@DP-2", "lockscreen-login-box@DP-1" ]
     visible = true
 
     [lockscreen_widgets.widget."lockscreen-login-box@DP-1"]
-    box_height = 0.0
-    box_width = 0.0
+    box_height = 196.0
+    box_width = 810.0
     cx = 1280.0
     cy = 1317.0
     output = "DP-1"
+    placement_height = 1620.0
+    placement_width = 2880.0
     rotation = 0.0
     type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@DP-1".settings]
+        center_password_text = false
+        layout = "regular"
+        show_caps_lock = true
+        show_keyboard_layout = true
+        show_login_button = true
+        show_media = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
 
     [lockscreen_widgets.widget."lockscreen-login-box@DP-2"]
-    box_height = 0.0
-    box_width = 0.0
-    cx = 720.0
+    box_height = 196.0
+    box_width = 810.0
+    cx = 720.00006103515625
     cy = 2437.0
     output = "DP-2"
+    placement_height = 2880.0
+    placement_width = 1620.0
     rotation = 0.0
     type = "login_box"
 
+        [lockscreen_widgets.widget."lockscreen-login-box@DP-2".settings]
+        center_password_text = false
+        layout = "regular"
+        show_caps_lock = true
+        show_keyboard_layout = true
+        show_login_button = true
+        show_media = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
+
+[notification]
+colorize_icons = false
+
+[plugin_settings."yuta/meeting-bar"]
+hide_empty = true
+reminder_minutes = 7
+
 [plugins]
-enabled = [ "noctalia/translator", "noctalia/timer" ]
+enabled = [ "noctalia/translator", "hy4ri/herdr", "weinguyen/opencode-companion", "yuta/meeting-bar", "noctalia/timer" ]
 
 [shell]
-app_icon_colorize = false
 avatar_path = "/home/mitra/profile.jpg"
 font_family = "Inter"
+polkit_colorize_icons = false
+screen_time_colorize_icons = false
 screen_time_enabled = true
 settings_show_advanced = true
 
     [shell.launcher]
-    session_search = true
+    colorize_icons = false
+    search_position = "top"
+    show_app_actions = true
+    show_app_origin_indicator = false
+    show_session_button = false
+    track_usage = false
+
+        [shell.launcher.providers.session]
+        global = true
+
+    [shell.screenshot]
+    show_cursor = true
+
+    [shell.window_switcher]
+    colorize_icons = false
 
 [theme]
 builtin = "Catppuccin"
+mode = "dark"
+pure_black_dark = true
+source = "builtin"
+wallpaper_scheme = "m3-content"
 
     [theme.templates]
     enable_builtin_templates = false
@@ -173,9 +253,18 @@ builtin = "Catppuccin"
 [wallpaper]
 per_monitor_directories = true
 transition = [ "fade" ]
+transition_on_startup = true
+
+    [wallpaper.automation]
+    enabled = true
+    interval_seconds = 5800
+    pause_on_fullscreen = true
+
+    [wallpaper.default]
+    path = "/home/mitra/Pictures/Wallpapers/milad-fakurian-E8Ufcyxz514-unsplash.jpg"
 
     [wallpaper.last]
-    path = "/home/mitra/Pictures/Wallpapers/pexels-vertical.jpg"
+    path = "/home/mitra/Pictures/Wallpapers/richard-horvath-cPccYbPrF-A-unsplash.jpg"
 
     [wallpaper.monitor.DP-1]
     directory = "/home/mitra/Pictures/Wallpapers/"
@@ -186,32 +275,56 @@ transition = [ "fade" ]
     directory_light = "/home/mitra/Pictures/Wallpapers/vertical"
 
     [wallpaper.monitors.DP-1]
-    path = "/home/mitra/Pictures/Wallpapers/pexels.jpg"
+    path = "/home/mitra/Pictures/Wallpapers/richard-horvath-cPccYbPrF-A-unsplash.jpg"
 
     [wallpaper.monitors.DP-2]
-    path = "/home/mitra/Pictures/Wallpapers/pexels-vertical.jpg"
+    path = "/home/mitra/Pictures/Wallpapers/milad-fakurian-E8Ufcyxz514-unsplash.jpg"
+
+[widget.active_window]
+colorize_icons = false
+
+[widget.bar]
+type = "hy4ri/herdr:bar"
+
+[widget.bar_2]
+type = "yuta/meeting-bar:bar"
 
 [widget.clock]
 format = "{:%A, %B %d at %-I:%M %p}"
 
 [widget.cpu]
-display = "text"
+enabled = false
+show_value = true
+visualization = "none"
 
 [widget.media]
 hide_when_no_media = true
 max_length = 320
 
 [widget.ram]
-display = "text"
-show_label = false
+enabled = false
+show_value = true
+visualization = "none"
+
+[widget.sysmon]
+enabled = false
+stat = "gpu_usage"
+visualization = "none"
+
+[widget.taskbar]
+colorize_icons = false
 
 [widget.temp]
-display = "text"
+enabled = false
+show_value = true
+visualization = "none"
 
 [widget.tray]
+colorize_icons = false
 drawer = true
 
 [widget.workspaces]
+colorize_icons = false
 empty_color = "tertiary"
-minimal = true
-scale = 1.25
+scale = 1.0
+style = "minimal"

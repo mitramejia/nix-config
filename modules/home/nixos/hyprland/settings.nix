@@ -31,7 +31,7 @@ in {
         # Lua accepts one keyboard-options value; comma-separating preserves
         # both previous options.
         kb_options = "grp:alt_caps_toggle,caps:super";
-        follow_mouse = 2;
+        follow_mouse = 1;
         float_switch_override_focus = 2;
         scroll_factor = 2;
         touchpad = {
@@ -47,29 +47,23 @@ in {
         layout = "dwindle";
         gaps_in = 5;
         gaps_out = 10;
-        border_size = 2;
+        border_size = 1;
         resize_on_border = true;
         col = {
-          active_border = {
-            colors = [
-              "rgb(${config.lib.stylix.colors.base08})"
-              "rgb(${config.lib.stylix.colors.base0C})"
-            ];
-            angle = 45;
-          };
-          inactive_border = "rgb(${config.lib.stylix.colors.base01})";
+          active_border = "rgb(${config.lib.stylix.colors.base04})";
+          inactive_border = "rgb(${config.lib.stylix.colors.base02})";
         };
       };
 
       decoration = {
-        rounding = 8;
+        rounding = 12;
         rounding_power = 2;
-        active_opacity = 0.96;
-        inactive_opacity = 0.92;
+        active_opacity = 0.94;
+        inactive_opacity = 0.90;
         fullscreen_opacity = 1.0;
         blur = {
           enabled = true;
-          size = 6;
+          size = 8;
           passes = 3;
           vibrancy = 0.1696;
           ignore_opacity = true;
