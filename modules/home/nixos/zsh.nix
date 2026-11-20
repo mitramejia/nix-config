@@ -1,6 +1,8 @@
 {
   config,
   host,
+  pkgs,
+  lib,
   ...
 }: {
   programs.zsh = {
@@ -31,6 +33,6 @@
         eval "$(scmpuff init -s)"
       fi
     '';
-    shellAliases = import ./shell-aliases.nix {inherit host;};
+    shellAliases = import ./shell-aliases.nix {inherit host pkgs lib;};
   };
 }
