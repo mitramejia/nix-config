@@ -3,6 +3,7 @@
 in {
   # Typed Nix tables become hl.window_rule calls in the 0.56 Lua backend.
   wayland.windowManager.hyprland.settings.window_rule = [
+    (rule {focus = true;} {border_size = 2;})
     (rule {
       title = "^()$";
       class = "^(steam)$";

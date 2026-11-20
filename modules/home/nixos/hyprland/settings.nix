@@ -58,12 +58,12 @@ in {
       decoration = {
         rounding = 12;
         rounding_power = 2;
-        active_opacity = 0.94;
-        inactive_opacity = 0.90;
+        active_opacity = 0.97;
+        inactive_opacity = 0.94;
         fullscreen_opacity = 1.0;
         blur = {
           enabled = true;
-          size = 8;
+          size = 7;
           passes = 3;
           vibrancy = 0.1696;
           ignore_opacity = true;
