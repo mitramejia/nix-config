@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  inputs,
   pkgs,
   unstablePkgs,
   ...
@@ -26,43 +25,26 @@
       ["pr-review-style" "~/.config/opencode/skills/pr-review-style/SKILL.md"]
       prReviewer.developer_instructions}
   '';
-  upstreamNixpkgsRevision = (builtins.fromJSON (builtins.readFile "${inputs.opencode}/flake.lock")).nodes.nixpkgs.locked.rev;
-  upstreamPackage = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
-  dependencyHash = import ./opencode/dependency-hash.nix {
-    system = pkgs.stdenv.hostPlatform.system;
-    rev = inputs.opencode.rev;
-    version = upstreamPackage.version;
-    hash = upstreamPackage.node_modules.outputHash;
-  };
-  # Reduce intermittent registry misses without changing dependency contents.
-  downloadReliablePackage = upstreamPackage.override {
-    node_modules = (upstreamPackage.node_modules.override {hash = dependencyHash;}).overrideAttrs (old: {
-      buildPhase =
-        builtins.replaceStrings
-        ["--no-progress"]
-        ["--no-progress --network-concurrency=8"]
-        old.buildPhase;
-    });
-  };
-  sourcePackage = downloadReliablePackage.overrideAttrs (old: {
-    passthru = (old.passthru or {}) // {inherit localPluginsCheck;};
+  upstreamPackage = unstablePkgs.opencode;
+  opencodePackage = upstreamPackage.overrideAttrs (old: {
+    passthru =
+      (old.passthru or {})
+      // {
+        inherit localPluginsCheck;
+        sourceChecks = {inherit localPluginsCheck;};
+      };
   });
-  # These checks target the source pin, not the official release's different SHA.
-  # Keep them opt-in rather than advertising them as binary package tests.
-  opencodePackage = (pkgs.callPackage ./opencode/package.nix {}).overrideAttrs {
-    passthru.sourceChecks = {inherit (sourcePackage) localPluginsCheck;};
-  };
   localPluginsCheck =
     pkgs.runCommand "opencode-local-plugins" {
-      nativeBuildInputs = [inputs.opencode.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.bun unstablePkgs.rtk];
+      nativeBuildInputs = [unstablePkgs.bun unstablePkgs.rtk];
     } ''
         cp -R ${./opencode/plugins} plugins
         cp ${./opencode/plugins.test.ts} plugins.test.ts
       bun test plugins.test.ts
       mkdir upstream
-      cp -R ${inputs.opencode}/packages upstream/packages
+      cp -R ${upstreamPackage.src}/packages upstream/packages
       chmod -R u+w upstream/packages
-      cp -R ${downloadReliablePackage.node_modules}/. upstream/
+      cp -R ${upstreamPackage.node_modules}/. upstream/
       cp -R ${./opencode/plugins} upstream/packages/plugin/check-plugins
       cp ${pkgs.writeText "opencode-local-plugin-tsconfig.json" (builtins.toJSON {
         compilerOptions = {
@@ -90,6 +72,7 @@
     {
       name = "opencode.json";
       plugins = platform.opencode.plugins;
+      removeMcpServers = ["statsig" "openaiDeveloperDocs" "sequential-thinking"];
       seed =
         {
           "$schema" = "https://opencode.ai/config.json";
@@ -122,7 +105,7 @@
     const intent = JSON.parse(fs.readFileSync(intentPath, "utf8"));
     const write = (configPath, value) => fs.writeFileSync(configPath, JSON.stringify(value, null, 2) + "\n", {mode: 0o644});
     // Reuse the pinned release's exact V1 command names, not guessed renames.
-    const keybindSource = fs.readFileSync("${inputs.opencode}/packages/tui/src/config/v1/keybind.ts", "utf8");
+    const keybindSource = fs.readFileSync("${upstreamPackage.src}/packages/tui/src/config/v1/keybind.ts", "utf8");
     const commandMap = Object.fromEntries([...keybindSource.split("export const CommandMap = {")[1].split("} satisfies")[0].matchAll(/(\w+): "([^"]+)"/g)].map((match) => [match[1], match[2]]));
     const normalize = (plugin) => Array.isArray(plugin) && typeof plugin[0] === "string" && plugin.length === 2
       ? {package: plugin[0], options: plugin[1]} : plugin;
@@ -223,8 +206,33 @@
           config.mcp[name] = {...server, ...currentMcp[name]};
         }
       }
+      // Remove retired servers from both V1 and V2 shapes without touching
+      // other servers, MCP preferences, or their authentication settings.
+      for (const name of entry.removeMcpServers ?? []) {
+        if (config.mcp) delete config.mcp[name];
+        if (config.mcp?.servers) delete config.mcp.servers[name];
+      }
       fs.mkdirSync(configDir, {recursive: true});
       write(configPath, config);
+    }
+
+    // Herdr V1 installed this server plugin imperatively. The V2 TUI
+    // replacement lives in plugins/herdr-agent-state/tui.ts; leaving the old
+    // file in the discovery directory causes missing-default-export errors.
+    const legacyPlugin = path.join(configDir, "plugins/herdr-agent-state.js");
+    let legacyStats;
+    try {
+      legacyStats = fs.lstatSync(legacyPlugin);
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+    // Do not follow symlinks or retire custom files based on their name alone.
+    if (legacyStats?.isFile() && /^\/\/ installed by herdr\r?\n(?:\/\/ managed by herdr; reinstalling or updating the integration overwrites this file\.\r?\n\/\/ add custom hooks\/plugins beside this file instead of editing it\.\r?\n)?\/\/ HERDR_INTEGRATION_ID=opencode\r?\n\/\/ HERDR_INTEGRATION_VERSION=\d+\r?\n/.test(fs.readFileSync(legacyPlugin, "utf8"))) {
+      // A unique sibling directory is outside both plugin discovery roots and
+      // never overwrites an earlier backup if Herdr installs the V1 file again.
+      const backup = path.join(fs.mkdtempSync(path.join(configDir, "retired-herdr-agent-state-")), "herdr-agent-state.js");
+      fs.renameSync(legacyPlugin, backup);
+      console.error("Retired legacy Herdr OpenCode plugin to " + backup);
     }
   '';
   mutableConfigReconciler = pkgs.writeShellApplication {
@@ -237,134 +245,204 @@
   mutableConfigIntentFile = json.generate "opencode-mutable-config-intent.json" mutableConfigIntent;
   mutableConfigCheck =
     pkgs.runCommand "opencode-mutable-config" {
-      nativeBuildInputs = [pkgs.nodejs pkgs.coreutils];
+      nativeBuildInputs = [pkgs.nodejs pkgs.coreutils pkgs.diffutils];
       passthru = {
         reconciler = mutableConfigReconciler;
         intentFile = mutableConfigIntentFile;
       };
     } ''
-      fixture="$PWD/fixture"
-      mkdir "$fixture"
-      ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
-      node -e '
-        const assert = require("assert");
-        const fs = require("fs");
-        const intent = JSON.parse(fs.readFileSync("${mutableConfigIntentFile}"));
-        const opencode = JSON.parse(fs.readFileSync("fixture/opencode.json"));
-         const tui = JSON.parse(fs.readFileSync("fixture/cli.json"));
-        assert.deepEqual(opencode, intent[0].seed);
-        assert.equal(opencode.default_agent, "planner");
-        assert.deepEqual(tui, intent[1].seed);
-      '
-      node -e '
-        const fs = require("fs");
-        fs.writeFileSync("fixture/opencode.json", JSON.stringify({
-          model: "user-model",
-          default_agent: "build",
-          permission: {"*": "ask"},
-           plugins: [{package: "object-plugin@1", options: {keep: true}}],
-           plugin: [["user-plugin@1", {keep: "tuple"}]],
-          mcp: {
-            github: {type: "remote", url: "https://user.example/mcp"},
-            "sequential-thinking": {command: ["user-command"]},
-            "user-server": {type: "remote", url: "https://user.example"}
-          }
-        }));
-         fs.writeFileSync("fixture/cli.json", JSON.stringify({
-           keybinds: {leader: "comma", "session.new": "ctrl+n"},
-           terminal: {copy: "manual"},
-           scroll: {speed: 7},
-           plugin: [["cli-tuple@1", {keep: true}]],
-           plugins: [{package: "vimcode@git+https://github.com/oribarilan/vimcode.git#v0.15.3", options: {keep: "vimcode"}}]
-         }));
-         fs.writeFileSync("fixture/tui.json", JSON.stringify({
-           keybinds: {leader: "space", session_new: "ctrl+t", input_move_left: "ctrl+h"},
-           theme: "user-theme",
-           mouse: false,
-           leader_timeout: 1234,
-           scroll_speed: 2,
-           scroll_acceleration: {enabled: true},
-           diff_style: "stacked",
-          plugin: [
-            "@leohenon/opencode-vim-plugin",
-            "vimcode@git+https://github.com/oribarilan/vimcode.git#v0.15.1",
-            "vimcode@git+https://github.com/oribarilan/vimcode.git#v0.14.0",
-            "user-plugin@1"
-          ]
-        }));
-      '
-      ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
-      node -e '
-        const assert = require("assert");
-        const fs = require("fs");
-        const intent = JSON.parse(fs.readFileSync("${mutableConfigIntentFile}"));
-        const opencode = JSON.parse(fs.readFileSync("fixture/opencode.json"));
-         const tui = JSON.parse(fs.readFileSync("fixture/cli.json"));
-        assert.equal(opencode.model, "user-model");
-        assert.equal(opencode.default_agent, "planner");
-        assert.deepEqual(opencode.permission, {"*": "ask"});
-         assert.deepEqual(opencode.plugins.find((p) => p.package === "user-plugin@1"), {package: "user-plugin@1", options: {keep: "tuple"}});
-         assert.deepEqual(opencode.plugins.find((p) => p.package === "object-plugin@1"), {package: "object-plugin@1", options: {keep: true}});
-         assert(!("plugin" in opencode));
-         for (const plugin of intent[0].plugins) assert(opencode.plugins.includes(plugin));
-        assert.equal(opencode.mcp.github.url, "https://user.example/mcp");
-        assert.deepEqual(opencode.mcp["user-server"], {type: "remote", url: "https://user.example"});
-         assert.deepEqual(opencode.mcp["sequential-thinking"], {...intent[0].seed.mcp["sequential-thinking"], command: ["user-command"]});
-        assert.deepEqual(opencode.mcp.figma, intent[0].seed.mcp.figma);
-         assert.equal(tui.keybinds.leader, "comma");
-         assert.equal(tui.keybinds["session.new"], "ctrl+n");
-         assert.equal(tui.keybinds["input.move.left"], "ctrl+h");
-         assert.deepEqual(tui.terminal, {copy: "manual"});
-         assert.deepEqual(tui.theme, {name: "user-theme"});
-         assert.equal(tui.mouse, false);
-         assert.deepEqual(tui.leader, {timeout: 1234});
-         assert.deepEqual(tui.scroll, {speed: 7, acceleration: true});
-         assert.deepEqual(tui.diffs, {view: "unified"});
-         assert.deepEqual(tui.plugins.find((p) => p.package === "cli-tuple@1"), {package: "cli-tuple@1", options: {keep: true}});
-         assert(!("plugin" in tui));
-         assert(tui.plugins.includes("user-plugin@1"));
-         assert(!tui.plugins.includes("@leohenon/opencode-vim-plugin"));
-         assert.deepEqual(tui.plugins.filter((plugin) => (plugin.package ?? plugin).startsWith("vimcode@git+https://github.com/oribarilan/vimcode.git")), [{package: "vimcode@git+https://github.com/oribarilan/vimcode.git#v0.19.1", options: {keep: "vimcode"}}]);
-       '
-      cp "$fixture/cli.json" before-cli.json
-      cp "$fixture/opencode.json" before-opencode.json
-      ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
-      cmp before-cli.json "$fixture/cli.json"
-      cmp before-opencode.json "$fixture/opencode.json"
-      mkdir "$fixture/disabled"
-      node -e '
-        const fs = require("fs");
-        fs.writeFileSync("fixture/disabled/cli.json", JSON.stringify({
-          plugins: ["-vimcode@git+https://github.com/oribarilan/vimcode.git#v0.15.3", {package: "local-plugin", options: {enabled: false}}],
-          mouse: false
-        }));
-      '
-      ${lib.getExe mutableConfigReconciler} "$fixture/disabled" ${mutableConfigIntentFile}
-      node -e '
-        const assert = require("assert");
-        const cli = require("./fixture/disabled/cli.json");
-        assert.deepEqual(cli.plugins, ["-vimcode@git+https://github.com/oribarilan/vimcode.git#v0.19.1", {package: "local-plugin", options: {enabled: false}}]);
-        assert.equal(cli.mouse, false);
-      '
-      rm "$fixture/cli.json"
-      ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
-      node -e 'const c = require("./fixture/cli.json"); require("assert").equal(c.keybinds["session.new"], "ctrl+t");'
-      rm "$fixture/cli.json"
-      ln -s ${json.generate "opencode-home-manager-cli" (builtins.elemAt mutableConfigIntent 1).seed} "$fixture/cli.json"
-      ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
-      test ! -L "$fixture/cli.json"
-      rm "$fixture/opencode.json"
-      printf '%s\n' '{"user":"symlink"}' > "$fixture/user-opencode.json"
-      ln -s "$fixture/user-opencode.json" "$fixture/opencode.json"
-      ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
-      test -L "$fixture/opencode.json"
-      test "$(cat "$fixture/user-opencode.json")" = '{"user":"symlink"}'
-      rm "$fixture/cli.json"
-      printf '%s\n' '{"plugins":["user-cli"],"keybinds":{"leader":"ctrl+x"}}' > "$fixture/user-cli.json"
-      ln -s "$fixture/user-cli.json" "$fixture/cli.json"
-      ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
-      test -L "$fixture/cli.json"
+            fixture="$PWD/fixture"
+            mkdir "$fixture"
+            ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
+            node -e '
+              const assert = require("assert");
+              const fs = require("fs");
+              const intent = JSON.parse(fs.readFileSync("${mutableConfigIntentFile}"));
+              const opencode = JSON.parse(fs.readFileSync("fixture/opencode.json"));
+               const tui = JSON.parse(fs.readFileSync("fixture/cli.json"));
+              assert.deepEqual(opencode, intent[0].seed);
+              assert.equal(opencode.default_agent, "planner");
+              assert.deepEqual(tui, intent[1].seed);
+            '
+            node -e '
+              const fs = require("fs");
+              fs.writeFileSync("fixture/opencode.json", JSON.stringify({
+                model: "user-model",
+                default_agent: "build",
+                permission: {"*": "ask"},
+                 plugins: [{package: "object-plugin@1", options: {keep: true}}],
+                 plugin: [["user-plugin@1", {keep: "tuple"}]],
+                mcp: {
+                  github: {type: "remote", url: "https://user.example/mcp"},
+                  statsig: {type: "remote", url: "https://retired.example"},
+                  openaiDeveloperDocs: {type: "remote", url: "https://retired.example"},
+                  "sequential-thinking": {command: ["user-command"]},
+                  "user-server": {type: "remote", url: "https://user.example"},
+                  timeout: {startup: 45000},
+                  servers: {
+                    statsig: {type: "remote", url: "https://retired.example"},
+                    openaiDeveloperDocs: {type: "remote", url: "https://retired.example"},
+                    "sequential-thinking": {type: "local", command: ["user-command"]},
+                    "user-server": {type: "remote", url: "https://user.example", headers: {Authorization: "keep"}}
+                  }
+                }
+              }));
+               fs.writeFileSync("fixture/cli.json", JSON.stringify({
+                 keybinds: {leader: "comma", "session.new": "ctrl+n"},
+                 terminal: {copy: "manual"},
+                 scroll: {speed: 7},
+                 plugin: [["cli-tuple@1", {keep: true}]],
+                 plugins: [{package: "vimcode@git+https://github.com/oribarilan/vimcode.git#v0.15.3", options: {keep: "vimcode"}}]
+               }));
+               fs.writeFileSync("fixture/tui.json", JSON.stringify({
+                 keybinds: {leader: "space", session_new: "ctrl+t", input_move_left: "ctrl+h"},
+                 theme: "user-theme",
+                 mouse: false,
+                 leader_timeout: 1234,
+                 scroll_speed: 2,
+                 scroll_acceleration: {enabled: true},
+                 diff_style: "stacked",
+                plugin: [
+                  "@leohenon/opencode-vim-plugin",
+                  "vimcode@git+https://github.com/oribarilan/vimcode.git#v0.15.1",
+                  "vimcode@git+https://github.com/oribarilan/vimcode.git#v0.14.0",
+                  "user-plugin@1"
+                ]
+              }));
+            '
+            ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
+            node -e '
+              const assert = require("assert");
+              const fs = require("fs");
+              const intent = JSON.parse(fs.readFileSync("${mutableConfigIntentFile}"));
+              const opencode = JSON.parse(fs.readFileSync("fixture/opencode.json"));
+               const tui = JSON.parse(fs.readFileSync("fixture/cli.json"));
+              assert.equal(opencode.model, "user-model");
+              assert.equal(opencode.default_agent, "planner");
+              assert.deepEqual(opencode.permission, {"*": "ask"});
+               assert.deepEqual(opencode.plugins.find((p) => p.package === "user-plugin@1"), {package: "user-plugin@1", options: {keep: "tuple"}});
+               assert.deepEqual(opencode.plugins.find((p) => p.package === "object-plugin@1"), {package: "object-plugin@1", options: {keep: true}});
+               assert(!("plugin" in opencode));
+               for (const plugin of intent[0].plugins) assert(opencode.plugins.includes(plugin));
+              assert.equal(opencode.mcp.github.url, "https://user.example/mcp");
+              assert.deepEqual(opencode.mcp["user-server"], {type: "remote", url: "https://user.example"});
+               for (const name of intent[0].removeMcpServers) {
+                 assert(!(name in opencode.mcp));
+                 assert(!(name in opencode.mcp.servers));
+                 assert(!(name in intent[0].seed.mcp));
+               }
+               assert.deepEqual(opencode.mcp.timeout, {startup: 45000});
+               assert.deepEqual(opencode.mcp.servers, {"user-server": {type: "remote", url: "https://user.example", headers: {Authorization: "keep"}}});
+              assert.deepEqual(opencode.mcp.figma, intent[0].seed.mcp.figma);
+               assert.equal(tui.keybinds.leader, "comma");
+               assert.equal(tui.keybinds["session.new"], "ctrl+n");
+               assert.equal(tui.keybinds["input.move.left"], "ctrl+h");
+               assert.deepEqual(tui.terminal, {copy: "manual"});
+               assert.deepEqual(tui.theme, {name: "user-theme"});
+               assert.equal(tui.mouse, false);
+               assert.deepEqual(tui.leader, {timeout: 1234});
+               assert.deepEqual(tui.scroll, {speed: 7, acceleration: true});
+               assert.deepEqual(tui.diffs, {view: "unified"});
+               assert.deepEqual(tui.plugins.find((p) => p.package === "cli-tuple@1"), {package: "cli-tuple@1", options: {keep: true}});
+               assert(!("plugin" in tui));
+               assert(tui.plugins.includes("user-plugin@1"));
+               assert(!tui.plugins.includes("@leohenon/opencode-vim-plugin"));
+               assert.deepEqual(tui.plugins.filter((plugin) => (plugin.package ?? plugin).startsWith("vimcode@git+https://github.com/oribarilan/vimcode.git")), [{package: "vimcode@git+https://github.com/oribarilan/vimcode.git#v0.19.1", options: {keep: "vimcode"}}]);
+             '
+            cp "$fixture/cli.json" before-cli.json
+            cp "$fixture/opencode.json" before-opencode.json
+            ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
+            cmp before-cli.json "$fixture/cli.json"
+            cmp before-opencode.json "$fixture/opencode.json"
+            mkdir "$fixture/disabled"
+            node -e '
+              const fs = require("fs");
+              fs.writeFileSync("fixture/disabled/cli.json", JSON.stringify({
+                plugins: ["-vimcode@git+https://github.com/oribarilan/vimcode.git#v0.15.3", {package: "local-plugin", options: {enabled: false}}],
+                mouse: false
+              }));
+            '
+            ${lib.getExe mutableConfigReconciler} "$fixture/disabled" ${mutableConfigIntentFile}
+            node -e '
+              const assert = require("assert");
+              const cli = require("./fixture/disabled/cli.json");
+              assert.deepEqual(cli.plugins, ["-vimcode@git+https://github.com/oribarilan/vimcode.git#v0.19.1", {package: "local-plugin", options: {enabled: false}}]);
+              assert.equal(cli.mouse, false);
+            '
+            rm "$fixture/cli.json"
+            ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
+            node -e 'const c = require("./fixture/cli.json"); require("assert").equal(c.keybinds["session.new"], "ctrl+t");'
+            rm "$fixture/cli.json"
+            ln -s ${json.generate "opencode-home-manager-cli" (builtins.elemAt mutableConfigIntent 1).seed} "$fixture/cli.json"
+            ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
+            test ! -L "$fixture/cli.json"
+            rm "$fixture/opencode.json"
+            printf '%s\n' '{"user":"symlink"}' > "$fixture/user-opencode.json"
+            ln -s "$fixture/user-opencode.json" "$fixture/opencode.json"
+            ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
+            test -L "$fixture/opencode.json"
+            test "$(cat "$fixture/user-opencode.json")" = '{"user":"symlink"}'
+            rm "$fixture/cli.json"
+            printf '%s\n' '{"plugins":["user-cli"],"keybinds":{"leader":"ctrl+x"}}' > "$fixture/user-cli.json"
+            ln -s "$fixture/user-cli.json" "$fixture/cli.json"
+            ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
+            test -L "$fixture/cli.json"
       test "$(cat "$fixture/user-cli.json")" = '{"plugins":["user-cli"],"keybinds":{"leader":"ctrl+x"}}'
+            node -e '
+              const fs = require("fs");
+              const path = require("path");
+              const managed = "// installed by herdr\n// managed by herdr; reinstalling or updating the integration overwrites this file.\n// add custom hooks/plugins beside this file instead of editing it.\n// HERDR_INTEGRATION_ID=opencode\n// HERDR_INTEGRATION_VERSION=9\nexport const HerdrAgentState = () => {};\n";
+              for (const [name, source] of Object.entries({
+                managed,
+                custom: "export default {};\n",
+                unmarked: "// HERDR_INTEGRATION_ID=opencode\nexport default {};\n",
+                customHeader: managed.replace("// managed by herdr;", "// managed by user;"),
+                other: managed.replace("ID=opencode", "ID=custom"),
+                symlink: managed,
+              })) {
+                const dir = path.join("fixture", name, "plugins");
+                fs.mkdirSync(path.join(dir, "herdr-agent-state"), {recursive: true});
+                fs.writeFileSync(path.join(dir, "herdr-agent-state/tui.ts"), "keep V2 plugin");
+                fs.writeFileSync(path.join(dir, "user.js"), "keep user plugin");
+                const plugin = path.join(dir, "herdr-agent-state.js");
+                if (name === "symlink") {
+                  fs.writeFileSync(path.join("fixture", name, "user.js"), source);
+                  fs.symlinkSync("../user.js", plugin);
+                } else fs.writeFileSync(plugin, source);
+              }
+            '
+            for scenario in managed custom unmarked customHeader other symlink; do
+              cp -r "$fixture/$scenario/plugins" "$fixture/$scenario-original-plugins"
+              ${lib.getExe mutableConfigReconciler} "$fixture/$scenario" ${mutableConfigIntentFile}
+              cp -r "$fixture/$scenario" "$fixture/$scenario-before"
+              ${lib.getExe mutableConfigReconciler} "$fixture/$scenario" ${mutableConfigIntentFile}
+              diff -r "$fixture/$scenario-before" "$fixture/$scenario"
+              if [ "$scenario" != managed ]; then
+                diff -r --no-dereference "$fixture/$scenario-original-plugins" "$fixture/$scenario/plugins"
+              fi
+            done
+            node -e '
+              const assert = require("assert");
+              const fs = require("fs");
+              const path = require("path");
+              const dir = "fixture/managed";
+              assert(!fs.existsSync(path.join(dir, "plugins/herdr-agent-state.js")), "obsolete managed plugin must not be auto-discovered");
+              const backups = fs.readdirSync(dir).filter((name) => name.startsWith("retired-herdr-agent-state-"));
+              assert.equal(backups.length, 1);
+              assert.equal(fs.readFileSync(path.join(dir, backups[0], "herdr-agent-state.js"), "utf8"),
+                "// installed by herdr\n// managed by herdr; reinstalling or updating the integration overwrites this file.\n// add custom hooks/plugins beside this file instead of editing it.\n// HERDR_INTEGRATION_ID=opencode\n// HERDR_INTEGRATION_VERSION=9\nexport const HerdrAgentState = () => {};\n");
+              for (const name of ["managed", "custom", "unmarked", "customHeader", "other", "symlink"]) {
+                const plugins = path.join("fixture", name, "plugins");
+                assert.equal(fs.readFileSync(path.join(plugins, "herdr-agent-state/tui.ts"), "utf8"), "keep V2 plugin");
+                assert.equal(fs.readFileSync(path.join(plugins, "user.js"), "utf8"), "keep user plugin");
+                if (name !== "managed") {
+                  assert.equal(fs.readFileSync(path.join(plugins, "herdr-agent-state.js"), "utf8"),
+                    fs.readFileSync(path.join("fixture", name + "-before", "plugins/herdr-agent-state.js"), "utf8"));
+                  assert(!fs.readdirSync(path.join("fixture", name)).some((entry) => entry.startsWith("retired-herdr-agent-state-")));
+                }
+              }
+              assert(fs.lstatSync("fixture/symlink/plugins/herdr-agent-state.js").isSymbolicLink());
+            '
       mkdir -p "$out"
     '';
 in {
@@ -422,14 +500,6 @@ in {
   config = {
     assertions = [
       {
-        assertion = lib.all (passed: passed) (builtins.attrValues (import ./opencode/dependency-hash.test.nix));
-        message = "OpenCode's dependency-hash correction must remain limited to the verified Darwin revision and upstream hash.";
-      }
-      {
-        assertion = inputs.opencode.inputs.nixpkgs.rev == upstreamNixpkgsRevision;
-        message = "OpenCode must retain its upstream nixpkgs lock: Bun's version affects fixed-output dependency hashes.";
-      }
-      {
         assertion =
           config.programs.opencode.settings
           == {}
@@ -449,7 +519,7 @@ in {
       }
     ];
 
-    # Track upstream OpenCode because nixpkgs updates can lag its rapid releases.
+    # Stable nixpkgs lags V2; use the shared unstable package on both hosts.
     programs.opencode = {
       enable = true;
       package = opencodePackage;

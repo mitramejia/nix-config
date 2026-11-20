@@ -25,6 +25,28 @@ nh darwin switch . -H macbook
 
 ## Validate before activation
 
+### OpenCode V2 updates with `fu`
+
+Both hosts use `unstablePkgs.opencode` from the existing `nixpkgs-unstable`
+input, currently V2 `2.3.0`. There is no separate OpenCode development input,
+release updater, archive pin, or local dependency-hash override.
+
+The usual `fu`/`nh --update` refreshes `nixpkgs-unstable` in `flake.lock` along
+with the other inputs. Review and commit the resulting lock changes. `fr`
+uses the existing lock and does not update inputs.
+
+`fu` remains Linux's `nh os boot --ask --hostname nixos --update` and macOS's
+`nh darwin switch --hostname macbook --update`. Linux needs a reboot to activate
+the prepared generation. If an older installed alias still invokes the removed
+release updater, activate this configuration once with `fr` and open a new shell
+when ready to deploy.
+
+The opt-in local-plugin check uses this package's source and `node_modules`,
+with Bun from the same unstable package set. Mutable configuration checks
+remain available for both hosts; validation does not deploy either host.
+
+### Repository validation
+
 From the repository root, on either `x86_64-linux` or `aarch64-darwin`:
 
 ```sh

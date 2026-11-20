@@ -25,6 +25,6 @@
     ];
   in {
     codex = common ++ ["appium-mcp" "browserstack"];
-    opencode = common;
+    opencode = builtins.filter (name: name != "statsig") common;
   };
 }

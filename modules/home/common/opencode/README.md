@@ -16,65 +16,19 @@ Other legacy server settings remain intact for upstream's
 V1 compatibility normalizer. User-managed symlinks are never rewritten;
 previous Nix-store links are replaced with mutable files, retaining their data.
 
-The package retains reduced download concurrency for dependency installation.
-Historical dependency hashes and the Bun resolution patch for older OpenCode
-releases have been removed. Dependency hashes normally come from upstream;
-the single current, narrowly gated Darwin correction is documented below.
+## Shared unstable package
 
-Keep OpenCode's own locked nixpkgs input rather than forcing it to the system's
-package set or a historical revision. For `13a615b`, upstream pins nixpkgs
-`3181085bfd08663b6b9e60bc7a8395c2aaa741bd` (Bun 1.4.2). The former forced
-`9dd5558` pin used Bun 1.3.13 and produced a different dependency tree despite
-the frozen Bun lockfile. Restoring upstream's toolchain passes its original
-dependency hash, including with the retained concurrency workaround; no hash
-override is needed. A Home Manager assertion guards this relationship on both
-hosts. When updating OpenCode, retain its upstream nixpkgs lock as well.
+Both hosts use `unstablePkgs.opencode` from the existing `nixpkgs-unstable`
+input, currently V2 `2.3.0`; stable nixpkgs lags V2. `fu` updates that package
+set through the usual `nh --update`; ordinary builds and `fr` remain
+reproducible from `flake.lock`. There is no separate OpenCode development
+input, binary-release updater, dependency-hash override, or download-concurrency
+patch.
 
-### Darwin dependency metadata mismatch at 0749024 (2026-10-26)
-
-The locked `0749024f0d6f6bb3014850a820d06677b7c37120` source updates its Bun
-lockfile, root package manifest and recorded dependency hashes. Its dependency
-derivation and normalization scripts are unchanged from the previously passing
-`13a615b` release. The upstream toolchain still matches: nixpkgs `3181085` / Bun 1.4.2.
-
-- Recorded Darwin hash: `sha256-TO9ubp4SLWrzWJY1BgDKOy/S8Tcws+Z2k+I6ba/TkWk=`.
-- Measured Darwin hash: `sha256-3EGfe+K2yM4atFT70JcwY66i/wFvHPO6/ewiIa2SB5Q=`.
-- Two configured builds and a separate **unmodified upstream** build produced
-  the same measured hash. Therefore the download-concurrency tweak is not the
-  cause. The registered measured output has no absolute or broken symlinks.
-- A subsequent `nix build --rebuild` of the corrected dependency passed Nix's
-  full output comparison, providing a fresh reproducibility check, not a cache hit.
-
-`dependency-hash.nix` corrects only that exact revision, package version,
-upstream hash and `aarch64-darwin` platform. Both the installed package and local
-plugin check use the same corrected dependency. Pure regression cases cover all
-gates, including future revisions and Linux passthrough. No lockfile update,
-toolchain change, resolver patch or global verification bypass is involved.
-The reason upstream CI recorded a different hash is not established; do not
-generalize this correction to another revision. Remove it when updating beyond
-this release and validate the next upstream dependency hash independently.
-
-Validated without activation: the original configured dependency installable,
-its forced reproducibility rebuild, the OpenCode package, `localPluginsCheck`
-(five tests / 83 assertions plus TypeScript), both full host derivation evaluations,
-`nix flake check --no-update-lock-file`, and the full Darwin system build all pass.
-An isolated HOME/XDG version smoke test reports `opencode v2.1.4+0749024`.
-Linux's configured hash is unchanged from upstream; Linux was evaluated, not built.
-
-Primary sources at the exact locked revision:
-- https://github.com/anomalyco/opencode/blob/0749024f0d6f6bb3014850a820d06677b7c37120/nix/hashes.json
-- https://github.com/anomalyco/opencode/blob/0749024f0d6f6bb3014850a820d06677b7c37120/nix/node_modules.nix
-
-### Build-only validation recorded 2026-10-24
-
-- The exact configured `package.node_modules` build now passes upstream's hash.
-- The configured package and `package.localPluginsCheck` build successfully:
-  five plugin tests, 83 assertions and the pinned workspace TypeScript check pass.
-- The built binary reports `opencode v2.1.4+13a615b` with isolated HOME/XDG paths.
-- Both host derivation evaluations and the full macOS system build pass without
-  activation. A temporary old-toolchain override is rejected by the new guard.
-- No running agent/service or live configuration was changed. Linux was evaluated,
-  not built locally; runtime plugin acceptance is separate from these build checks.
+The package retains opt-in `localPluginsCheck` and `sourceChecks.localPluginsCheck`
+passthru attributes. The check uses the unstable package's `src` and
+`node_modules`, with `unstablePkgs.bun`. Mutable configuration migration uses
+the same source's V1 command map; both hosts retain their fixture checks.
 
 ## Agents and routing
 

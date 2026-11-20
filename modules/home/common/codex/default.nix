@@ -16,7 +16,8 @@
   codexMcp = config.private.codexMcpServers;
   openCodeMcp = config.private.openCodeMcpServers;
   mcpCatalogAdaptersCheck = assert lib.assertMsg (lib.intersectLists mcp.membership.opencode mcp.membership.codex == mcp.membership.opencode) "MCP common membership must have one shared identity list.";
-  assert lib.assertMsg (lib.subtractLists mcp.membership.opencode mcp.membership.codex == ["appium-mcp" "browserstack"]) "Only Codex may add Appium and BrowserStack.";
+  assert lib.assertMsg (lib.subtractLists mcp.membership.opencode mcp.membership.codex == ["statsig" "appium-mcp" "browserstack"]) "Only Codex retains Statsig, Appium, and BrowserStack.";
+  assert lib.assertMsg (!(openCodeMcp ? statsig) && codexMcp.statsig.url == mcp.catalog.statsig.url) "Statsig removal must be scoped to OpenCode.";
   assert lib.assertMsg (mcp.catalog.appium-mcp.package == "appium-mcp@1.92.2" && mcp.catalog.browserstack.package == "@browserstack/mcp-server@1.2.34") "Local MCP package identities belong in the catalog.";
   assert lib.assertMsg (codexMcp.figma.url == mcp.catalog.figma.url && openCodeMcp.figma.type == "remote" && openCodeMcp.figma.url == mcp.catalog.figma.url) "MCP adapters must render representative remote servers.";
   assert lib.assertMsg (codexMcp.linear.tools.save_comment.approval_mode == "approve" && codexMcp.linear.tools.save_document.approval_mode == "approve" && codexMcp.linear.tools.save_issue.approval_mode == "approve") "Codex must retain Linear approval behavior.";

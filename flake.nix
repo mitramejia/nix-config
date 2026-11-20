@@ -93,9 +93,10 @@
       url = "github:sadjow/claude-code-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    opencode = {
-      # Bun affects fixed-output dependency hashes; retain upstream's own nixpkgs lock.
-      url = "github:anomalyco/opencode";
+    claude-desktop = {
+      # Third-party Nix packaging of Anthropic's Linux beta; absent from our nixpkgs pins.
+      url = "github:poeck/claude-desktop-nix-flake/55ba585546fe222bf18f391a98c1ee60f79684d2";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
     codex-cli-nix = {
       url = "github:sadjow/codex-cli-nix";
