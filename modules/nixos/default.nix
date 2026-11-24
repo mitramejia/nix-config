@@ -62,7 +62,10 @@ in {
     gvfs.enable = true;
     openssh.enable = true;
     usbmuxd.enable = true;
-    flatpak.enable = true;
+    flatpak = {
+      enable = true;
+      packages = ["com.stremio.Stremio"];
+    };
     avahi = {
       enable = true;
       nssmdns4 = true;
@@ -80,12 +83,6 @@ in {
     power-profiles-daemon.enable = true;
     rpcbind.enable = false;
     nfs.server.enable = false;
-  };
-  systemd.services.flatpak-repo = {
-    path = [pkgs.flatpak];
-    script = ''
-      flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-    '';
   };
 
   services.blueman.enable = true;

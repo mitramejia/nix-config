@@ -5,6 +5,7 @@
   "linear"
   "notion-calendar"
   "slack"
+  "whatsapp"
   "discord"
   "obsidian"
   "google-chrome"

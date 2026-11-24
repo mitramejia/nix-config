@@ -18,6 +18,6 @@
   homebrew = {
     enable = true;
     casks = import ./casks.nix;
-    onActivation.cleanup = "none";
+    onActivation.cleanup = "uninstall";
   };
 }

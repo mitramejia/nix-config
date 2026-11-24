@@ -5,6 +5,8 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
+    nix-flatpak.url = "github:gmodena/nix-flatpak/v0.8.0";
+
     # Linux-only pin for the MediaTek btmtk Bluetooth fix.
     nixpkgs-kernel.url = "github:nixos/nixpkgs/c67afa6adaf99e9b3af8f3432e6c084ffdfc252d";
 
@@ -205,6 +207,7 @@
             ;
         };
         modules = [
+          inputs.nix-flatpak.nixosModules.nix-flatpak
           ./hosts/nixos
           ./modules/nixos
         ];
