@@ -25,7 +25,6 @@
     vlc
     trash-cli
     alpine
-    inputs.rencal.packages.${pkgs.stdenv.hostPlatform.system}.default
     code-cursor
     jetbrains-toolbox
     (callPackage ./xtool.nix {})

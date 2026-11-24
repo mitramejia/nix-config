@@ -45,9 +45,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Retain upstream nixpkgs for nodejs_26 and caldir, absent from our pins.
-    rencal.url = "github:t4t5/rencal";
-
     herdr = {
       url = "github:herdrdev/herdr/v0.8.2";
       inputs.nixpkgs.follows = "nixpkgs";
