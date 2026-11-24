@@ -6,7 +6,6 @@
     ./packages.nix
     ./shell.nix
     ./ssh.nix
-    ./tmux.nix
     ./zen-browser.nix
   ];
 

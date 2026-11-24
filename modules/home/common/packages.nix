@@ -60,7 +60,6 @@ in {
       alejandra
       statix
       lazydocker
-      tmux
       scmpuff070
       act
       actionlint

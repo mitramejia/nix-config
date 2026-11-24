@@ -22,7 +22,7 @@
     autosuggestion.enable = true;
     oh-my-zsh = {
       enable = true;
-      plugins = ["node" "git" "aws" "z" "vi-mode" "aliases" "yarn" "nvm" "jenv" "tmux"];
+      plugins = ["node" "git" "aws" "z" "vi-mode" "aliases" "yarn" "nvm" "jenv"];
       theme = "";
     };
     initContent = ''

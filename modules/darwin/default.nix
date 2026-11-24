@@ -13,6 +13,11 @@
   # Determinate Nix owns the Nix installation and daemon on this host.
   nix.enable = false;
 
+  security.pam.services.sudo_local = {
+    touchIdAuth = true;
+    reattach = true;
+  };
+
   nixpkgs = {
     config = {
       allowUnfree = true;

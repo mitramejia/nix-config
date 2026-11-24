@@ -1,4 +1,4 @@
-{ pkgs, ... }: {
+{pkgs, ...}: {
   programs.nixvim = {
     plugins = {
       web-devicons.enable = true;
@@ -114,7 +114,6 @@
           delay = 300;
         };
       };
-      tmux-navigator.enable = true;
 
       nvim-autopairs = {
         enable = true;

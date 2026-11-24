@@ -127,8 +127,8 @@ in {
         ];
       };
 
-      # Herdr limits scrollback by bytes. 100 MB approximates tmux's
-      # one-million-line history without reserving memory up front.
+      # Herdr limits scrollback by bytes. Retain 100 MB of history
+      # without reserving memory up front.
       advanced.scrollback_limit_bytes = 100 * 1000 * 1000;
 
       session.resume_agents_on_restore = true;

@@ -1,14 +1,11 @@
 [
   "visual-studio-code"
   "jetbrains-toolbox"
-  "insomnia"
   "figma"
   "linear-linear"
   "notion-calendar"
   "slack"
   "discord"
   "obsidian"
-  "iterm2"
-  "raycast"
   "google-chrome"
 ]

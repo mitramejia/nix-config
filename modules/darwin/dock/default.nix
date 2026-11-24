@@ -8,7 +8,7 @@
   ...
 }: let
   cfg = config.local.dock;
-  inherit (lib) concatMapStrings concatStringsSep escapeShellArg escapeURL hasSuffix mkIf mkOption splitString types;
+  inherit (lib) concatMapStrings concatStringsSep escapeShellArg escapeURL hasSuffix mkAfter mkIf mkOption optionalString splitString types;
   inherit (pkgs) dockutil stdenv;
 in {
   options.local.dock = {
@@ -24,6 +24,11 @@ in {
         listOf (submodule {
           options = {
             path = lib.mkOption {type = str;};
+            optional = lib.mkOption {
+              type = bool;
+              default = false;
+              description = "Warn and skip this entry when its path does not exist.";
+            };
             section = lib.mkOption {
               type = str;
               default = "apps";
@@ -52,24 +57,48 @@ in {
       entryURI = path:
         "file://"
         + concatStringsSep "/" (map escapeURL (splitString "/" (normalize path)));
-      wantURIs = pkgs.writeText "dock-uris" (concatMapStrings (entry: "${entryURI entry.path}\n") cfg.entries);
-      validateEntries =
-        concatMapStrings (entry: let
-          path = normalize entry.path;
-        in ''
+      validateEntries = concatMapStrings (entry: let
+        path = normalize entry.path;
+      in
+        optionalString (!entry.optional) ''
           if [ ! -e ${escapeShellArg path} ]; then
             printf '%s\n' ${escapeShellArg "Dock entry does not exist: ${path}"} >&2
             exit 1
           fi
         '')
-        cfg.entries;
+      cfg.entries;
+      writeExpectedURIs = concatMapStrings (entry: let
+        path = normalize entry.path;
+        writeURI = "printf '%s\\n' ${escapeShellArg (entryURI path)} >> \"$dock_state/want-uris\"";
+      in
+        if entry.optional
+        then ''
+          if [ -e ${escapeShellArg path} ]; then
+            ${writeURI}
+          else
+            printf '%s\n' ${escapeShellArg "Optional Dock entry does not exist; skipping: ${path}"} >&2
+          fi
+        ''
+        else "${writeURI}\n")
+      cfg.entries;
       createEntries =
         concatMapStrings (
-          entry: "${dockutil}/bin/dockutil --no-restart --add ${escapeShellArg (normalize entry.path)} --section ${escapeShellArg entry.section}${concatMapStrings (option: " ${escapeShellArg option}") entry.options}\n"
+          entry: let
+            path = normalize entry.path;
+            addEntry = "${dockutil}/bin/dockutil --no-restart --add ${escapeShellArg path} --section ${escapeShellArg entry.section}${concatMapStrings (option: " ${escapeShellArg option}") entry.options}";
+          in
+            if entry.optional
+            then ''
+              if [ -e ${escapeShellArg path} ]; then
+                ${addEntry}
+              fi
+            ''
+            else "${addEntry}\n"
         )
         cfg.entries;
     in {
-      system.activationScripts.postActivation.text = ''
+      # Home Manager creates the stable app links in its postActivation script.
+      system.activationScripts.postActivation.text = mkAfter ''
           echo >&2 "Setting up the Dock for ${cfg.username}..."
           su ${escapeShellArg cfg.username} -s /bin/sh <<'USERBLOCK'
         set -eu
@@ -83,13 +112,16 @@ in {
           ${pkgs.coreutils}/bin/rm -rf "$dock_state"
         ' EXIT
 
+        : > "$dock_state/want-uris"
+        ${writeExpectedURIs}
+
         if ! ${dockutil}/bin/dockutil --list > "$dock_state/list"; then
           echo >&2 "Cannot read the Dock; leaving it unchanged."
           exit 1
         fi
 
         ${pkgs.gawk}/bin/awk -F '\t' '$3 != "recentApps" {print $2}' "$dock_state/list" > "$dock_state/uris"
-        if ${pkgs.diffutils}/bin/diff -wu "$dock_state/uris" ${escapeShellArg wantURIs} >&2; then
+        if ${pkgs.diffutils}/bin/diff -wu "$dock_state/uris" "$dock_state/want-uris" >&2; then
           echo >&2 "Dock setup complete."
         else
           diff_status=$?

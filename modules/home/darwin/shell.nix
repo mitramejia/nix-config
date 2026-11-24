@@ -33,11 +33,6 @@
       export PATH="$HOME/Library/Android/sdk/platform-tools:$PATH"
       export HISTIGNORE="pwd:ls:cd"
 
-      tmux_sock="/private/tmp/tmux-$(id -u)/default"
-      if [[ -S "$tmux_sock" ]] && ! pgrep -x tmux >/dev/null 2>&1; then
-        rm -f "$tmux_sock"
-      fi
-
       export ALTERNATE_EDITOR=""
       export EDITOR="vim"
 

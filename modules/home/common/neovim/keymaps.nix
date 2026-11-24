@@ -99,30 +99,6 @@
       action = "<C-w>l";
       options.desc = "Pane right";
     }
-    {
-      key = "<C-h>";
-      mode = ["t"];
-      action = "<C-\\><C-n><Cmd>TmuxNavigateLeft<CR>";
-      options.desc = "Tmux navigate left (terminal)";
-    }
-    {
-      key = "<C-j>";
-      mode = ["t"];
-      action = "<C-\\><C-n><Cmd>TmuxNavigateDown<CR>";
-      options.desc = "Tmux navigate down (terminal)";
-    }
-    {
-      key = "<C-k>";
-      mode = ["t"];
-      action = "<C-\\><C-n><Cmd>TmuxNavigateUp<CR>";
-      options.desc = "Tmux navigate up (terminal)";
-    }
-    {
-      key = "<C-l>";
-      mode = ["t"];
-      action = "<C-\\><C-n><Cmd>TmuxNavigateRight<CR>";
-      options.desc = "Tmux navigate right (terminal)";
-    }
 
     {
       key = "<leader>wv";
