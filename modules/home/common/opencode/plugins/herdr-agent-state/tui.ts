@@ -8,6 +8,7 @@ export default Plugin.define({
   id: "local.herdr-agent-state",
   setup(ctx) {
     const paneID = process.env.HERDR_PANE_ID
+    const workspaceID = process.env.HERDR_WORKSPACE_ID
     const socketPath = process.env.HERDR_SOCKET_PATH
     if (process.env.HERDR_ENV !== "1" || !paneID || !socketPath) return
 
@@ -17,10 +18,12 @@ export default Plugin.define({
     let chain = Promise.resolve()
     let selected: string | undefined
     let lastState: string | undefined
+    let lastTitle: string | undefined
     const sockets = new Set<net.Socket>()
     const parents = new Map<string, string>()
     const created = new Set<string>()
     const pending = new Map<string, string>()
+    const titles = new Map<string, string>()
 
     function request(method: string, params: Record<string, unknown>) {
       chain = chain
@@ -33,7 +36,10 @@ export default Plugin.define({
                   JSON.stringify({
                     id: `herdr:opencode:${Date.now()}:${++seq}`,
                     method,
-                    params: { pane_id: paneID, source: "herdr:opencode", agent: "opencode", seq, ...params },
+                    params:
+                      method === "workspace.rename"
+                        ? params
+                        : { pane_id: paneID, source: "herdr:opencode", agent: "opencode", seq, ...params },
                   }) + "\n",
                 )
               })
@@ -72,6 +78,16 @@ export default Plugin.define({
       request("pane.report_agent", { state, agent_session_id: selected })
     }
 
+    function rename() {
+      if (!workspaceID || !selected || disposed) return
+      const title = (titles.get(selected) ?? ctx.data.session.get(selected)?.title)?.trim()
+      // V2 titles are optional; older sessions may retain timestamp fallbacks.
+      if (!title || /^(New session|Child session) - \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(title)) return
+      if (title === lastTitle) return
+      lastTitle = title
+      request("workspace.rename", { workspace_id: workspaceID, label: title })
+    }
+
     function select() {
       const route = ctx.ui.router.current()
       // An unhydrated child can look like a root. Wait for cached metadata
@@ -79,8 +95,12 @@ export default Plugin.define({
       const candidate =
         route.type === "session" && ctx.data.session.get(route.sessionID) ? root(route.sessionID) : undefined
       const next = candidate && ctx.data.session.get(candidate) ? candidate : undefined
-      if (next === selected) return
+      if (next === selected) {
+        rename()
+        return
+      }
       selected = next
+      rename()
       lastState = undefined
       if (!next) return
       request("pane.report_agent_session", {
@@ -100,6 +120,9 @@ export default Plugin.define({
 
     const stop = ctx.data.listen(({ details: event }) => {
       if (disposed) return
+      // The event precedes the asynchronous session cache refresh. Keep its
+      // title authoritative so later events cannot briefly restore stale text.
+      if (event.type === "session.renamed") titles.set(event.data.sessionID, event.data.title)
       if (event.type === "session.created") {
         if (event.data.parentID) parents.set(event.data.sessionID, event.data.parentID)
         else created.add(event.data.sessionID)
@@ -170,6 +193,7 @@ export default Plugin.define({
       pending.clear()
       parents.clear()
       created.clear()
+      titles.clear()
     }
   },
 })
