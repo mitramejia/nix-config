@@ -1,4 +1,4 @@
-{config, ...}: let
+{...}: let
   inherit (import ../../../variables.nix) keyboardLayout;
 in {
   wayland.windowManager.hyprland.settings = {
@@ -45,14 +45,10 @@ in {
 
       general = {
         layout = "dwindle";
-        gaps_in = 5;
+        gaps_in = 6;
         gaps_out = 10;
-        border_size = 1;
+        border_size = 0;
         resize_on_border = true;
-        col = {
-          active_border = "rgb(${config.lib.stylix.colors.base04})";
-          inactive_border = "rgb(${config.lib.stylix.colors.base02})";
-        };
       };
 
       decoration = {
@@ -71,9 +67,10 @@ in {
         };
         shadow = {
           enabled = true;
-          range = 4;
+          range = 14;
           render_power = 3;
-          color = "rgba(1a1a1aee)";
+          color = "rgba(1a1a1a8c)";
+          color_inactive = "rgba(1a1a1a40)";
         };
       };
 
