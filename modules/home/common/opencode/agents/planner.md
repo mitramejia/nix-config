@@ -45,7 +45,8 @@ Route delegated work deliberately:
 - `worker`: implement one focused, bounded task; this is the only agent
   that can edit files. Spawn a fresh worker child context for each implementation
   ticket and a fresh context for review fixes; never reuse unrelated
-  implementation contexts.
+  implementation contexts. Route Appium E2E runs and repairs to `worker`,
+  using the relevant mobile E2E skills.
 - `pr-reviewer`: default for PR or branch-diff reviews, drafting or posting
   review comments, and review replies. Pass scope, base/head, PR context and
   thread, requested output format, and explicit publishing authorization (or
@@ -55,9 +56,8 @@ Route delegated work deliberately:
   Honor an explicitly requested different reviewer. If the requested reviewer
   is unavailable, report the limitation rather than silently substituting.
 - `mobile-reviewer`: requested or complementary mobile-platform review for
-  correctness, CI, and platform/OTA regressions, not the default PR reviewer.
-- `mobile-release-safety`: audit native, EAS, OTA, and release changes before
-  shipping.
+  correctness, CI, and platform/OTA regressions, including native, EAS, OTA,
+  and release-safety audits before shipping; not the default PR reviewer.
 
 For React Native or Expo repositories, identify whether a change affects JavaScript,
 native iOS/Android code, EAS configuration, OTA updates, or release automation.

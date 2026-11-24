@@ -91,12 +91,12 @@ pinned taps and retained casks; activation cleanup is disabled.
 After the usual host activation, start the coordinating main agent with
 `claude --agent planner`. `/agents` lists the user-scoped definitions installed
 under `~/.claude/agents`: `planner`, `worker`, `scout`, `triage`, `pr-reviewer`,
-`mobile-reviewer`, `mobile-release-safety`, `appium-test-engineer`, and
+`mobile-reviewer`, and
 `commit-staged`. Prompts are generated from the existing OpenCode Markdown and
 Codex TOML sources, not maintained as separate copies.
 
 All agents inherit your Claude model and ordinary permission approvals. Only
-`worker` and `appium-test-engineer` retain file-editing tools; read-only roles
+`worker` retains file-editing tools; read-only roles
 can still request shell checks, and the reviewer can publish when authorized.
 Use the planner as the main agent when coordinating delegated work.
 

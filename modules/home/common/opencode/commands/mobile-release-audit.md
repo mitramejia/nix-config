@@ -1,6 +1,6 @@
 ---
 description: Audit the current diff for OTA, EAS, native, and release risks
-agent: mobile-release-safety
+agent: mobile-reviewer
 ---
 
 Audit the current diff for release safety: $ARGUMENTS

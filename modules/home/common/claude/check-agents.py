@@ -12,9 +12,9 @@ import yaml
 manifest = json.load(open(sys.argv[1]))
 expected = {
     "planner", "worker", "scout", "triage", "mobile-reviewer",
-    "mobile-release-safety", "appium-test-engineer", "pr-reviewer", "commit-staged",
+    "pr-reviewer", "commit-staged",
 }
-read_only = expected - {"worker", "appium-test-engineer"}
+read_only = expected - {"worker"}
 assert set(manifest["agents"]) == expected
 assert set(manifest["readOnlyNames"]) == read_only
 for name, text in manifest["agents"].items():
@@ -61,5 +61,5 @@ for skill_id, flat_name in zip(skill_ids, flat_names):
     deployed = (claude_bundle / flat_name / "SKILL.md").read_bytes()
     source = (Path(manifest["originalBundle"]) / skill_id / "SKILL.md").read_bytes()
     assert deployed == source, skill_id
-print("Validated all nine Claude agents, source prompts, and permissions.")
+print(f"Validated all {len(expected)} Claude agents, source prompts, and permissions.")
 print(f"Validated flat Claude coverage for all {len(skill_ids)} selected skills.")

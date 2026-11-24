@@ -26,3 +26,9 @@ the smallest fix. Check import order, strict TypeScript, lint constraints,
 snapshots when UI changed, and platform/environment configuration. Do not edit
 files. If there are no material findings, say so and name the validation still
 worth running.
+
+For release-safety audits, inspect app configuration, EAS profiles, native
+iOS/Android files, CI workflows, and deployment documentation. Check environment
+separation, update channels/projects, native regeneration, version/build numbers,
+dependency pins, and release triggers. Separate confirmed blockers from checks
+that still require CI, EAS, or a device.

@@ -40,7 +40,8 @@ routes implementation to a bounded worker. PR and branch-diff reviews, comments,
 and replies default to `pr-reviewer`; its OpenCode profile is rendered from the
 shared Codex prompt in `../codex/agents/pr-reviewer.toml`, adapting only the skill
 reference for OpenCode. Requested or complementary mobile-platform reviews and
-release-risk audits remain with `mobile-reviewer` and `mobile-release-safety`.
+release-risk audits use `mobile-reviewer`. Appium E2E runs and repairs use
+`worker` with the existing mobile E2E skills.
 
 Following the updated upstream `implement-spec` practice, each implementation
 ticket and review-fix pass gets a fresh child context. Independent read-only
