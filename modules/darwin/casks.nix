@@ -2,7 +2,7 @@
   "visual-studio-code"
   "jetbrains-toolbox"
   "figma"
-  "linear-linear"
+  "linear"
   "notion-calendar"
   "slack"
   "discord"
