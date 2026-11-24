@@ -6,3 +6,6 @@ result
 result-*
 .tokensave
 .codegraph
+
+# per-machine Claude Code settings (headroom writes absolute paths here)
+.claude/settings.local.json
