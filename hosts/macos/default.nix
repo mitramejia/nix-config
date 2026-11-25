@@ -7,6 +7,7 @@
 in {
   networking.hostName = host.hostname;
   system.stateVersion = host.systemStateVersion;
+  homebrew.casks = ["1password"];
 
   local.dock.entries = [
     {path = "/Applications/Slack.app/";}
