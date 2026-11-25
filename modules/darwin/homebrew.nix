@@ -1,4 +1,5 @@
 {
+  config,
   host,
   inputs,
   ...
@@ -17,6 +18,7 @@
 
   homebrew = {
     enable = true;
+    taps = builtins.attrNames config.nix-homebrew.taps;
     casks = import ./casks.nix;
     onActivation.cleanup = "uninstall";
   };

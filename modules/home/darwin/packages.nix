@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  lib,
+  pkgs,
+  ...
+}: {
   home.packages = with pkgs; [
     devenv
     nil
@@ -47,7 +51,8 @@
     unrar
     unzip
     zip
-    python311
+    # Keep python3.11 available alongside the default interpreter used by Herdr.
+    (lib.lowPrio python311)
     python3Packages.virtualenv
     sqlite
     fastlane
