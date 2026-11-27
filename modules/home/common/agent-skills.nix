@@ -4,7 +4,17 @@
   unstablePkgs,
   ...
 }: let
-  herdrSource = unstablePkgs.herdr.src;
+  # The herdr skills are fetched at eval time from the same tarball nixpkgs
+  # builds herdr from, so they must be a plain fetchzip/fetchFromGitHub src.
+  herdrSource = let
+    src = unstablePkgs.herdr.src;
+  in
+    assert lib.assertMsg (
+      builtins.isString (src.url or null)
+      && (src.outputHashMode or null) == "recursive"
+      && lib.hasPrefix "sha256-" (src.outputHash or "")
+      && (src.stripRoot or true)
+    ) "agent-skills.nix: unstablePkgs.herdr.src is no longer a plain unpacked tarball (fetchzip/fetchFromGitHub with url and SRI sha256 outputHash); nixpkgs changed how it fetches or patches herdr, so point the herdr skills source at a herdr flake input or a pinned fetchTree instead."; src;
   cursorTeamKitSkills = [
     "cursor-team-kit/check-compiler-errors"
     "cursor-team-kit/control-cli"
@@ -72,7 +82,8 @@ in {
         };
 
         herdr = {
-          # The skill catalog reads this at evaluation time, including across platforms.
+          # The skill catalog reads this at evaluation time on every platform, so
+          # fetch it without import-from-derivation (see herdrSource).
           path =
             (builtins.fetchTree {
               type = "tarball";
