@@ -68,22 +68,27 @@
   mcpServers = (import ./opencode-mcp-servers.nix {inherit lib;}).opencode;
   tuiPlugins = ["vimcode@git+https://github.com/oribarilan/vimcode.git#v0.19.1"];
   platform = config.private.openCodeMutableConfigPlatform;
+  openCodeSeed =
+    {
+      "$schema" = "https://opencode.ai/config.json";
+      default_agent = "planner";
+      plugins = platform.opencode.plugins;
+      mcp = mcpServers;
+    }
+    // {
+      permission."*" = "allow";
+    }
+    // platform.opencode.seed;
   mutableConfigIntent = [
     {
       name = "opencode.json";
       plugins = platform.opencode.plugins;
+      # Keep the primary agent consistent for existing configs, not just new seeds.
+      forceKeys = {inherit (openCodeSeed) default_agent;};
+      # Models earlier generations seeded; drop them so OpenCode's own default applies.
+      removeModels = ["gpt-5.4" "openai/gpt-5.4" "openai/gpt-5.6-sol"];
       removeMcpServers = ["statsig" "openaiDeveloperDocs" "sequential-thinking"];
-      seed =
-        {
-          "$schema" = "https://opencode.ai/config.json";
-          default_agent = "planner";
-          plugins = platform.opencode.plugins;
-          mcp = mcpServers;
-        }
-        // {
-          permission."*" = "allow";
-        }
-        // platform.opencode.seed;
+      seed = openCodeSeed;
     }
     {
       name = "cli.json";
@@ -174,8 +179,8 @@
         }
       }
       config.$schema = entry.seed.$schema;
-      // Keep the primary agent consistent for existing configs, not just new seeds.
-      if (entry.name === "opencode.json") config.default_agent = entry.seed.default_agent;
+      Object.assign(config, entry.forceKeys ?? {});
+      if ((entry.removeModels ?? []).includes(config.model)) delete config.model;
       delete config.plugin;
       const removed = new Set(entry.removePlugins ?? []);
       const replacedPrefixes = entry.replacePluginPrefixes ?? [];
@@ -354,6 +359,22 @@
             ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
             cmp before-cli.json "$fixture/cli.json"
             cmp before-opencode.json "$fixture/opencode.json"
+            mkdir "$fixture/legacy-model"
+            echo '{"model":"gpt-5.4"}' > "$fixture/legacy-model/opencode.json"
+            ${lib.getExe mutableConfigReconciler} "$fixture/legacy-model" ${mutableConfigIntentFile}
+            node -e '
+              const assert = require("assert");
+              const opencode = require("./fixture/legacy-model/opencode.json");
+              assert.equal(opencode.model, undefined);
+            '
+            mkdir "$fixture/user-model"
+            echo '{"model":"anthropic/claude-sonnet-5-5"}' > "$fixture/user-model/opencode.json"
+            ${lib.getExe mutableConfigReconciler} "$fixture/user-model" ${mutableConfigIntentFile}
+            node -e '
+              const assert = require("assert");
+              const opencode = require("./fixture/user-model/opencode.json");
+              assert.equal(opencode.model, "anthropic/claude-sonnet-5-5");
+            '
             mkdir "$fixture/disabled"
             node -e '
               const fs = require("fs");
