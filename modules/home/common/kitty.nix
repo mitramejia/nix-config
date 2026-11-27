@@ -16,7 +16,7 @@
       scrollback_pager_history_size = 32;
       modify_font = "cell_width 102%";
       window_padding_width = 14;
-      confirm_os_window_close = "-1 count-background";
+      confirm_os_window_close = 0;
       notify_on_cmd_finish = "invisible 15.0";
       enable_audio_bell = false;
       active_tab_font_style = "bold";

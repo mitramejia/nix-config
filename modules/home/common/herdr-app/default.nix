@@ -9,8 +9,9 @@
   # GPUI represents prefix sequences as space-separated keystrokes.
   prefix = lib.replaceStrings ["+"] ["-"] config.programs.herdr.settings.keys.prefix;
   defaults = {
-    "settings.json" = {
-      theme = "nix-catppuccin-mocha";
+    "settings.json".theme = {
+      dark = "nix-catppuccin-mocha";
+      light = "paper";
     };
     "keys.json".global = {
       "${prefix} ," = "app.settings";

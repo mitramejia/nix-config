@@ -64,7 +64,12 @@ in {
         new_cwd = "follow";
       };
 
-      theme.name = "catppuccin";
+      theme = {
+        name = "catppuccin";
+        auto_switch = true;
+        dark_name = "catppuccin";
+        light_name = "catppuccin-latte";
+      };
 
       ui = {
         mouse_capture = true;
