@@ -7,7 +7,7 @@
 in {
   networking.hostName = host.hostname;
   system.stateVersion = host.systemStateVersion;
-  homebrew.casks = ["1password"];
+  homebrew.casks = ["1password" "peteonrails/voxtype/voxtype"];
 
   local.dock.entries = [
     {path = "/Applications/Slack.app/";}

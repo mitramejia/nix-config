@@ -556,6 +556,22 @@
         "type": "github"
       }
     },
+    "homebrew-voxtype": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1787681373,
+        "narHash": "sha256-C0mwQJPEszV5lswRiD8bPYns7tsc9Sfi+J9pYBSur/A=",
+        "owner": "peteonrails",
+        "repo": "homebrew-voxtype",
+        "rev": "bbe5cf4a97f5f6e154931060b9350a272ef32d13",
+        "type": "github"
+      },
+      "original": {
+        "owner": "peteonrails",
+        "repo": "homebrew-voxtype",
+        "type": "github"
+      }
+    },
     "hyprcursor": {
       "inputs": {
         "hyprlang": [
@@ -1144,6 +1160,7 @@
         "homebrew-bundle": "homebrew-bundle",
         "homebrew-cask": "homebrew-cask",
         "homebrew-core": "homebrew-core",
+        "homebrew-voxtype": "homebrew-voxtype",
         "hyprland": "hyprland",
         "hyprmod": "hyprmod",
         "mattpocock-skills": "mattpocock-skills",

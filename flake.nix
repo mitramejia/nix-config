@@ -74,6 +74,10 @@
       url = "github:homebrew/homebrew-cask";
       flake = false;
     };
+    homebrew-voxtype = {
+      url = "github:peteonrails/homebrew-voxtype";
+      flake = false;
+    };
 
     agent-skills = {
       url = "github:Kyure-A/agent-skills-nix";

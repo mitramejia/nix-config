@@ -16,30 +16,14 @@
     optional
     optionals
     optionalAttrs
-    recursiveUpdate
     escapeShellArg
     escapeShellArgs
     concatMapStringsSep
     types
     ;
 
+  # `settings` and the config file live in modules/home/common/voxtype.nix.
   cfg = config.services.voxtype;
-  toml = pkgs.formats.toml {};
-  # Voxtype requires these whenever a config file exists.
-  settings =
-    recursiveUpdate {
-      hotkey = {};
-      audio = {
-        device = "default";
-        sample_rate = 16000;
-        max_duration_secs = 60;
-      };
-      output = {
-        mode = "type";
-        fallback_to_clipboard = true;
-      };
-    }
-    cfg.settings;
 in {
   meta.maintainers = [lib.maintainers.marijanp];
 
@@ -48,24 +32,6 @@ in {
 
     package = mkPackageOption pkgs "voxtype" {
       example = "pkgs.voxtype-vulkan";
-    };
-
-    settings = mkOption {
-      inherit (toml) type;
-      default = {};
-      example = {
-        output = {
-          mode = "type";
-          fallback_to_clipboard = true;
-        };
-        whisper = {
-          model = "base.en";
-          language = "en";
-        };
-      };
-      description = ''
-        Voxtype configuration written to `$XDG_CONFIG_HOME/voxtype/config.toml`.
-      '';
     };
 
     extraArgs = mkOption {
@@ -122,17 +88,13 @@ in {
         pkgs.wtype
       ];
 
-    xdg.configFile."voxtype/config.toml" = mkIf (cfg.settings != {}) {
-      source = toml.generate "voxtype-config.toml" settings;
-    };
-
     systemd.user.services.voxtype = {
       Unit =
         {
           Description = "Voxtype speech-to-text daemon";
           PartOf = ["graphical-session.target"];
           After = ["graphical-session.target"];
-          X-Restart-Triggers = mkIf (cfg.settings != {}) [
+          X-Restart-Triggers = [
             "${config.xdg.configFile."voxtype/config.toml".source}"
           ];
         }

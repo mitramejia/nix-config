@@ -9,6 +9,12 @@
     ./zen-browser.nix
   ];
 
+  # Voxtype is installed by the Homebrew cask in hosts/macos.
+  services.voxtype.settings.hotkey = {
+    key = "D";
+    modifiers = ["LEFTMETA"];
+  };
+
   home = {
     enableNixpkgsReleaseCheck = false;
     inherit (host) username homeDirectory;

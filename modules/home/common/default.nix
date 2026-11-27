@@ -16,6 +16,7 @@
     ./packages.nix
     ./shell-aliases.nix
     ./starship.nix
+    ./voxtype.nix
     ./zen-browser.nix
   ];
 

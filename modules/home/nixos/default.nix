@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  config,
+  pkgs,
+  ...
+}: {
   imports = [
     ./hyprland
     ./clipboard.nix
@@ -33,14 +37,9 @@
   services.voxtype = {
     enable = true;
     package = pkgs.voxtype.override {vulkanSupport = true;};
-    loadModels = ["large-v3-turbo"];
+    loadModels = [config.services.voxtype.settings.whisper.model];
     wayland.display = "wayland-1";
-    settings = {
-      hotkey.enabled = false;
-      whisper = {
-        model = "large-v3-turbo";
-        language = "en";
-      };
-    };
+    # Hyprland's Super+D binds drive recording via `voxtype record`.
+    settings.hotkey.enabled = false;
   };
 }
