@@ -52,6 +52,8 @@ in {
       jdk17
       jq
       glab
+      # Follow recent Multica CLI releases from unstable.
+      unstablePkgs.multica-cli
       uv
       # Stable 2.34 lacks Agent Toolkit (introduced in 2.35).
       unstablePkgs.awscli2
