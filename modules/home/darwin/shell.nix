@@ -42,7 +42,8 @@
     '';
     shellAliases = {
       fr = "nh darwin switch --no-nom --hostname ${host.key} ${host.nixConfig}";
-      fu = "nh darwin switch --no-nom --hostname ${host.key} --update ${host.nixConfig}";
+      # Authenticate GitHub API calls so updating every input stays under the rate limit.
+      fu = "NIX_CONFIG=\"access-tokens = github.com=$(gh auth token)\" nh darwin switch --no-nom --hostname ${host.key} --update ${host.nixConfig}";
       ls = lib.mkForce "eza --icons";
       ll = lib.mkForce "eza -lh --icons --grid --group-directories-first";
       la = lib.mkForce "eza -lah --icons --grid --group-directories-first";
