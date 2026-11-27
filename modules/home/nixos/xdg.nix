@@ -2,16 +2,15 @@
   hyprlandPkgs,
   pkgs,
   ...
-}:
-let
+}: let
   inherit (import ../../variables.nix) mimeDefaultApplications;
-  defaultAssociations =
-    mimeTypes: desktopFile:
+  defaultAssociations = mimeTypes: desktopFile:
     builtins.listToAttrs (
       map (mimeType: {
         name = mimeType;
         value = desktopFile;
-      }) mimeTypes
+      })
+      mimeTypes
     );
 
   browserDesktopFile = "zen-beta.desktop";
@@ -37,9 +36,8 @@ let
   ];
 
   slackDesktopFile = "slack.desktop";
-  slackMimeTypes = [ "x-scheme-handler/slack" ];
-in
-{
+  slackMimeTypes = ["x-scheme-handler/slack"];
+in {
   xdg = {
     desktopEntries.imv = {
       name = "Image Viewer";
@@ -79,7 +77,7 @@ in
         "gtk"
       ];
       # Portal discovery must use the same 0.56 package as the compositor.
-      configPackages = [ hyprlandPkgs.hyprland ];
+      configPackages = [hyprlandPkgs.hyprland];
     };
   };
 }

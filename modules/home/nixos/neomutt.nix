@@ -2,9 +2,8 @@
   config,
   pkgs,
   ...
-}:
-{
-  home.packages = [ pkgs.libsecret ];
+}: {
+  home.packages = [pkgs.libsecret];
 
   programs.neomutt = {
     enable = true;
