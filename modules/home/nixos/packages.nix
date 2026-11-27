@@ -8,6 +8,8 @@
     zapzap
     slack
     inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop
+    # Matches the CLI, which also comes from unstable.
+    unstablePkgs.opencode-desktop
     zoom-us
     thunderbird
     # Aerion is not available in the pinned stable package set.

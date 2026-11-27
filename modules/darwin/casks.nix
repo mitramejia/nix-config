@@ -11,6 +11,7 @@
   "google-chrome"
   "chatgpt"
   "claude"
+  "opencode-desktop"
   "reader"
   "readwise-ibooks"
   "ardia"
