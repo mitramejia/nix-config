@@ -8,14 +8,6 @@
   # Use the host's existing allowUnfree policy (Readwise is proprietary),
   # rather than the flake's unconfigured legacyPackages output.
   firefox-addons = (pkgs.extend inputs.firefox-addons.overlays.default).firefox-addons;
-  catppuccinMoz = ../../../assets/catppuccin-zen-browser/mocha/blue;
-  catppuccinLogoPath = "${config.home.homeDirectory}/.local/share/catppuccin-zen-browser/mocha/blue/zen-logo.svg";
-  catppuccinUserChrome = builtins.readFile "${catppuccinMoz}/userChrome.css";
-  catppuccinUserContent =
-    lib.replaceStrings
-    ["url(\"zen-logo-mocha.svg\")"]
-    ["url(\"file://${catppuccinLogoPath}\")"]
-    (builtins.readFile "${catppuccinMoz}/userContent.css");
   cfg = config.programs.zen-browser;
   profileGuard = pkgs.writeShellApplication {
     name = "zen-profile-guard";
@@ -107,24 +99,12 @@ in {
       ${lib.getExe profileGuard} ${lib.escapeShellArg cfg.configPath} ${lib.escapeShellArg "${cfg.profilesPath}/${cfg.profiles.default.path}"}
     '';
 
-    home.file = {
-      ".local/share/catppuccin-zen-browser/mocha/blue/zen-logo.svg".source = "${catppuccinMoz}/zen-logo.svg";
-    };
-
     programs.zen-browser = {
       enable = true;
       # Keep the Linux MIME list narrow; Darwin uses LaunchServices separately.
       setAsDefaultBrowser = false;
 
       profiles.default = {
-        settings = {
-          # Required for userChrome/userContent styles to be loaded.
-          "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
-
-          # Mocha is intended for dark mode.
-          "ui.systemUsesDarkTheme" = 1;
-        };
-
         extensions.packages = with firefox-addons; [
           react-devtools
           reduxdevtools
@@ -134,9 +114,6 @@ in {
           readwise-highlighter
           onepassword-password-manager
         ];
-
-        userChrome = catppuccinUserChrome;
-        userContent = catppuccinUserContent;
       };
     };
   };
