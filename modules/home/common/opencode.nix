@@ -12,12 +12,12 @@
     mode: subagent
     model: openai/${prReviewer.model}#${prReviewer.model_reasoning_effort}
     permissions:
+      - action: "*"
+        resource: "*"
+        effect: allow
       - action: edit
         resource: "*"
         effect: deny
-      - action: shell
-        resource: "*"
-        effect: ask
     ---
 
     ${builtins.replaceStrings
