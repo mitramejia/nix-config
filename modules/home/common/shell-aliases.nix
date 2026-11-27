@@ -10,7 +10,7 @@
     gplo = "git pull origin";
     open-pr = "gh pr create";
     p = "pnpm";
-    headroom-update = ''uv tool update --python 3.13 "headroom-ai[all]"'';
+    headroom-update = ''uv tool install --upgrade --python 3.13 "headroom-ai[all]"'';
     codex = "HERDR_AGENT=codex headroom wrap codex";
     claude = "headroom wrap claude";
     oc = "headroom wrap opencode --auto";
