@@ -1,5 +1,6 @@
 {
   hyprlandPkgs,
+  inputs,
   pkgs,
   unstablePkgs,
   ...
@@ -74,6 +75,7 @@
       ninja # Build system
       brightnessctl # Brightness control
       chromium # Web browser
+      inputs.ardia.packages.${pkgs.stdenv.hostPlatform.system}.ardia
       discord # Chat and voice communication
       virt-viewer # Virtual machine viewer
       swappy # Screenshot editor

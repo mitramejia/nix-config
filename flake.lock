@@ -53,6 +53,26 @@
         "type": "github"
       }
     },
+    "ardia": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795769059,
+        "narHash": "sha256-+KBCXS8dHCbbftJGD/5sVvISdVoDiDeE+fA7iU5o2ds=",
+        "owner": "Yucklys",
+        "repo": "ardia-flake",
+        "rev": "d74c45cc84f90b6bf1e256f1fc88a03988b65448",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Yucklys",
+        "repo": "ardia-flake",
+        "type": "github"
+      }
+    },
     "base16": {
       "inputs": {
         "fromYaml": "fromYaml"
@@ -507,11 +527,11 @@
     "homebrew-cask": {
       "flake": false,
       "locked": {
-        "lastModified": 1795700008,
-        "narHash": "sha256-a/KmbvSCEuxXaG/1FGy1WkhOSdGBMXwPI75xMW/aRYc=",
+        "lastModified": 1795797522,
+        "narHash": "sha256-Zadruu7lVzPyL7SLbLQy54ZJN3U7FwUWy8pMmA7glFU=",
         "owner": "homebrew",
         "repo": "homebrew-cask",
-        "rev": "9019e178649ffee5255c8a2417eda37c91fcc14e",
+        "rev": "6cbe4462ad941f9e795da144ab51773f361d3a12",
         "type": "github"
       },
       "original": {
@@ -1110,6 +1130,7 @@
     "root": {
       "inputs": {
         "agent-skills": "agent-skills",
+        "ardia": "ardia",
         "claude-code": "claude-code",
         "claude-desktop": "claude-desktop",
         "codex-cli-nix": "codex-cli-nix",

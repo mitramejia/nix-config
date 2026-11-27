@@ -6,6 +6,10 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
     nix-flatpak.url = "github:gmodena/nix-flatpak/v0.8.0";
+    ardia = {
+      url = "github:Yucklys/ardia-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Linux-only pin for the MediaTek btmtk Bluetooth fix.
     nixpkgs-kernel.url = "github:nixos/nixpkgs/c67afa6adaf99e9b3af8f3432e6c084ffdfc252d";
