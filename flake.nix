@@ -294,6 +294,7 @@
       hyprland-workspace-startup-lua = hyprlandWorkspaceStartupCheck;
       mcp-catalog-adapters = nixosHome.private.mcpCatalogAdaptersCheck;
       opencode-mutable-config-nixos = nixosHome.private.openCodeMutableConfigCheck;
+      rtk-global-integration = nixosHome.private.rtkCheck;
       zen-browser-config = nixosHome.private.zenBrowserCheck;
     };
 
@@ -301,6 +302,7 @@
       herdr-app-mutable-config = darwinHome.private.herdrAppConfigCheck;
       mcp-catalog-adapters = darwinHome.private.mcpCatalogAdaptersCheck;
       opencode-mutable-config-darwin = darwinHome.private.openCodeMutableConfigCheck;
+      rtk-global-integration = darwinHome.private.rtkCheck;
       zen-browser-config = darwinHome.private.zenBrowserCheck;
     };
 

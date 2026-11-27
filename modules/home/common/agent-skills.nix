@@ -47,6 +47,9 @@ in {
     programs.agent-skills = {
       enable = true;
 
+      # Keep agent-owned system skills and unmanaged local archives out of sync.
+      excludePatterns = ["/.system" "/.trash" "/synced"];
+
       sources = {
         mattpocock-productivity = {
           input = "mattpocock-skills";

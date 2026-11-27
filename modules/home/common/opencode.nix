@@ -50,7 +50,7 @@
   });
   localPluginsCheck =
     pkgs.runCommand "opencode-local-plugins" {
-      nativeBuildInputs = [unstablePkgs.bun unstablePkgs.rtk];
+      nativeBuildInputs = [unstablePkgs.bun config.private.rtkPackage];
     } ''
         cp -R ${./opencode/plugins} plugins
         cp ${./opencode/plugins.test.ts} plugins.test.ts

@@ -65,7 +65,6 @@ in {
       scmpuff070
       act
       actionlint
-      rtk
       just
       docker-compose
       lmstudio

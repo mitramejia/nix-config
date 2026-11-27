@@ -14,6 +14,7 @@
     ./neovim.nix
     ./opencode.nix
     ./packages.nix
+    ./rtk.nix
     ./shell-aliases.nix
     ./starship.nix
     ./voxtype.nix
