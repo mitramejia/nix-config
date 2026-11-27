@@ -25,7 +25,11 @@
       tab_bar_style = "powerline";
       enabled_layouts = "splits";
     };
-    themeFile = "Catppuccin-Mocha";
+    autoThemeFiles = {
+      light = "Catppuccin-Latte";
+      dark = "Catppuccin-Mocha";
+      noPreference = "Catppuccin-Mocha";
+    };
     keybindings = {
       "ctrl+insert" = "copy_to_clipboard";
       "shift+insert" = "paste_from_clipboard";
