@@ -60,7 +60,7 @@ untracked sources.
 
 ## Local V2 plugins
 
-Home Manager supplies the three focused ports under `plugins/`:
+Home Manager supplies focused plugins under `plugins/`:
 
 - `rtk.ts`: registers `ctx.tool.hook("execute.before")` and delegates shell
   command rewriting to RTK >= 0.23. It accepts rewrite exit codes 0 and 3
@@ -69,6 +69,12 @@ Home Manager supplies the three focused ports under `plugins/`:
 - `browserstack-env.ts`: registers a replayable `ctx.mcp.transform` that sets
   only BrowserStack's `disabled` flag when either process credential is absent.
   Both credentials leave the server's existing settings untouched.
+- `github-gh-auth.ts`: when `GITHUB_PAT_TOKEN` is absent, uses
+  `gh auth token --hostname github.com` in memory for the managed GitHub server's
+  empty Bearer header. Explicit credentials, custom URLs/authorization, OAuth
+  settings and disabled servers are unchanged. Missing/failed `gh` leaves
+  configuration untouched; no token is logged or persisted. Reload the plugin
+  after changing the CLI login.
 - `herdr-agent-state/tui.ts`: a terminal-local CLI plugin, not a server plugin.
   It captures that terminal's Herdr socket/pane environment, observes the selected
   route and its root-session family, and uses V2 `event.data` execution,

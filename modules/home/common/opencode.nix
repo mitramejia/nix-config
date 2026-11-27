@@ -561,6 +561,7 @@ in {
           "commands/mobile-release-audit.md" = ./opencode/commands/mobile-release-audit.md;
           "plugins/rtk.ts" = ./opencode/plugins/rtk.ts;
           "plugins/browserstack-env.ts" = ./opencode/plugins/browserstack-env.ts;
+          "plugins/github-gh-auth.ts" = ./opencode/plugins/github-gh-auth.ts;
           "plugins/herdr-agent-state/tui.ts" = ./opencode/plugins/herdr-agent-state/tui.ts;
         });
 

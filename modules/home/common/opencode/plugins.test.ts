@@ -1,6 +1,7 @@
-import { test, expect, mock } from "bun:test"
+import { test, expect, mock, spyOn } from "bun:test"
 import { chmodSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import net from "node:net"
+import { tmpdir } from "node:os"
 import path from "node:path"
 
 // Only the host registration surface is mocked; RTK subprocesses and the
@@ -10,6 +11,7 @@ mock.module("@opencode/plugin/tui", () => ({ Plugin: { define: (definition: unkn
 mock.module("solid-js", () => ({ createEffect: (effect: () => void) => effect() }))
 const rtk = (await import("./plugins/rtk")).default
 const browserstack = (await import("./plugins/browserstack-env")).default
+const github = (await import("./plugins/github-gh-auth")).default
 const herdr = (await import("./plugins/herdr-agent-state/tui")).default
 
 test("RTK delegates shell rewrites, and leaves non-shell/empty/no-match commands alone", async () => {
@@ -111,6 +113,124 @@ test("BrowserStack needs both credentials; transform changes only disabled", asy
     else process.env.BROWSERSTACK_USERNAME = username
     if (key === undefined) delete process.env.BROWSERSTACK_ACCESS_KEY
     else process.env.BROWSERSTACK_ACCESS_KEY = key
+  }
+})
+
+test("GitHub uses gh only as a missing-PAT fallback and preserves server overrides on replay", async () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "github-plugin-"))
+  const oldPath = process.env.PATH
+  const pat = process.env.GITHUB_PAT_TOKEN
+  const executable = path.join(directory, "gh")
+  const managed = {
+    type: "remote",
+    url: "https://api.githubcopilot.com/mcp/",
+    oauth: false,
+    headers: { Authorization: "Bearer ", KEEP: "yes" },
+    disabled: false,
+  }
+  try {
+    delete process.env.GITHUB_PAT_TOKEN
+    process.env.PATH = directory
+    writeFileSync(
+      executable,
+      '#!/bin/sh\n[ "$*" = "auth token --hostname github.com" ] || exit 1\nprintf "fixture-token\\n"\n',
+    )
+    chmodSync(executable, 0o755)
+    let transform: any
+    await github.setup({
+      mcp: {
+        transform: async (callback: any) => {
+          transform = callback
+        },
+      },
+    } as any)
+    expect(transform).toBeFunction()
+    const apply = (servers: Record<string, any>) =>
+      transform({
+        update: (name: string, update: any) => {
+          if (servers[name]) update(servers[name])
+        },
+      })
+    const servers = { github: structuredClone(managed), other: structuredClone(managed) }
+    apply(servers)
+    apply(servers)
+    expect(servers.github).toEqual({
+      ...managed,
+      headers: { ...managed.headers, Authorization: "Bearer fixture-token" },
+    })
+    expect(servers.other).toEqual(managed)
+    const fresh = { github: structuredClone(managed) }
+    apply(fresh)
+    expect(fresh.github).toEqual(servers.github)
+    for (const override of [
+      { disabled: true },
+      { url: "https://custom.example/mcp" },
+      { oauth: undefined },
+      { oauth: { client_id: "custom" } },
+      { headers: { Authorization: "Bearer explicit-pat" } },
+      { headers: { Authorization: "Basic explicit" } },
+      { headers: { Authorization: "Bearer {env:GITHUB_PAT_TOKEN}" } },
+      { headers: { authorization: "Bearer explicit" } },
+      { headers: { Authorization: "Bearer ", authorization: "Bearer explicit" } },
+      { headers: {} },
+      { headers: undefined },
+      { type: "local", command: ["custom"] },
+    ]) {
+      const github = { ...structuredClone(managed), ...override }
+      const before = structuredClone(github)
+      apply({ github })
+      expect(github).toEqual(before)
+    }
+    apply({}) // An absent server is never created.
+    process.env.GITHUB_PAT_TOKEN = "explicit-env-pat"
+    await github.setup({
+      mcp: {
+        transform: async () => {
+          throw new Error("must not register with explicit PAT")
+        },
+      },
+    } as any)
+  } finally {
+    if (pat === undefined) delete process.env.GITHUB_PAT_TOKEN
+    else process.env.GITHUB_PAT_TOKEN = pat
+    process.env.PATH = oldPath
+    rmSync(directory, { recursive: true, force: true })
+  }
+})
+
+test("GitHub missing/failed gh and invalid output leave config alone without leaking secrets", async () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "github-plugin-"))
+  const oldPath = process.env.PATH
+  const pat = process.env.GITHUB_PAT_TOKEN
+  const logs = ["log", "info", "warn", "error", "debug"] as const
+  const spies = logs.map((method) => spyOn(console, method).mockImplementation(() => {}))
+  try {
+    delete process.env.GITHUB_PAT_TOKEN
+    process.env.PATH = directory
+    const ctx = {
+      mcp: {
+        transform: async () => {
+          throw new Error("must not register on failure")
+        },
+      },
+    }
+    await github.setup(ctx as any) // gh is missing.
+    for (const script of [
+      'printf "fixture-secret-stdout"; printf "fixture-secret-stderr" >&2; exit 1',
+      'printf ""',
+      'printf "fixture-token\\ninjected-header"',
+    ]) {
+      writeFileSync(path.join(directory, "gh"), `#!/bin/sh\n${script}\n`)
+      chmodSync(path.join(directory, "gh"), 0o755)
+      await github.setup(ctx as any)
+    }
+    for (const spy of spies) expect(spy).not.toHaveBeenCalled()
+  } finally {
+    for (const spy of spies) spy.mockRestore()
+    if (pat === undefined) delete process.env.GITHUB_PAT_TOKEN
+    else process.env.GITHUB_PAT_TOKEN = pat
+    process.env.PATH = oldPath
+    rmSync(directory, { recursive: true, force: true })
   }
 })
 
