@@ -60,13 +60,11 @@ def write_object(path, value):
             os.unlink(temporary)
 
 
-def reconcile(home, state, defaults, keys_seed):
+def reconcile(home, state, defaults, seeds):
     previous = read_object(state)
     desired = read_object(defaults)
-    seeds = {
-        "keys.json": keys_seed,
-        "layouts/main.json": keys_seed.parent / "layouts/main.json",
-    }
+    # Shipped app files that a missing config file starts from, by config name.
+    seeds = {name: Path(path) for name, path in read_object(seeds).items()}
     changes = []
     # Validate all files before making any changes; invalid app data is not lost.
     for name in sorted(previous.keys() | desired.keys()):

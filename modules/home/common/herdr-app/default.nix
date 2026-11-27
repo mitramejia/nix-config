@@ -52,7 +52,12 @@
     };
   };
   defaultsFile = json.generate "herdr-app-defaults.json" defaults;
-  keysSeed = "${unstablePkgs.herdr-desktop.src}/defaults/keys${lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ".macos"}.json";
+  shipped = "${unstablePkgs.herdr-desktop.src}/defaults";
+  # A config file the app has not created yet starts from its shipped default.
+  seedsFile = json.generate "herdr-app-seeds.json" {
+    "keys.json" = "${shipped}/keys${lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ".macos"}.json";
+    "layouts/main.json" = "${shipped}/layouts/main.json";
+  };
   reconcile = pkgs.writeShellApplication {
     name = "reconcile-herdr-app";
     runtimeInputs = [pkgs.python3];
@@ -62,7 +67,7 @@
   };
   check = pkgs.runCommand "herdr-app-mutable-config" {} ''
     export HERDR_APP_DEFAULTS=${defaultsFile}
-    export HERDR_APP_KEYS_SEED=${keysSeed}
+    export HERDR_APP_SEEDS=${seedsFile}
     ${pkgs.python3}/bin/python3 -B -m unittest discover -s ${./.} -v
     mkdir -p "$out"
   '';
@@ -82,7 +87,7 @@ in {
         ${lib.escapeShellArg "${config.xdg.configHome}/herdr-app"} \
         ${lib.escapeShellArg "${config.xdg.stateHome}/herdr-app/home-manager-defaults.json"} \
         ${defaultsFile} \
-        ${keysSeed}
+        ${seedsFile}
     '';
   };
 }

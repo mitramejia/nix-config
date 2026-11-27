@@ -15,8 +15,10 @@ class ReconcileTests(unittest.TestCase):
         self.home = root / "config"
         self.state = root / "state" / "defaults.json"
         self.defaults = root / "defaults.json"
-        self.keys_seed = root / "keys-seed.json"
-        self.write(self.keys_seed, {"global": {"ctrl-shift-t": "tab.new"}})
+        self.seeds = root / "seeds.json"
+        keys_seed = root / "keys-seed.json"
+        self.write(keys_seed, {"global": {"ctrl-shift-t": "tab.new"}})
+        self.write(self.seeds, {"keys.json": str(keys_seed)})
         self.intent = {
             "settings.json": {"theme": "catppuccin"},
             "keys.json": {"global": {"ctrl-space c": "tab.new"}},
@@ -31,7 +33,7 @@ class ReconcileTests(unittest.TestCase):
 
     def apply(self):
         self.write(self.defaults, self.intent)
-        reconcile(self.home, self.state, self.defaults, self.keys_seed)
+        reconcile(self.home, self.state, self.defaults, self.seeds)
 
     def test_fresh_install_creates_writable_regular_files(self):
         self.apply()
@@ -135,16 +137,15 @@ class ReconcileTests(unittest.TestCase):
     @unittest.skipUnless(os.environ.get("HERDR_APP_DEFAULTS"), "Nix declaration fixture")
     def test_real_declaration_preserves_shipped_keys_and_local_app_changes(self):
         self.intent = json.loads(Path(os.environ["HERDR_APP_DEFAULTS"]).read_text())
-        self.keys_seed = Path(os.environ["HERDR_APP_KEYS_SEED"])
+        self.seeds = Path(os.environ["HERDR_APP_SEEDS"])
+        seeds = json.loads(self.seeds.read_text())
         self.apply()
         self.assertEqual(self.read("keys.json")["global"]["ctrl-space c"], "tab.new")
-        seed = json.loads(self.keys_seed.read_text())
+        seed = json.loads(Path(seeds["keys.json"]).read_text())
         for section, bindings in seed.items():
             for key, action in bindings.items():
                 self.assertEqual(self.read("keys.json")[section][key], action)
-        layout_seed = json.loads(
-            (self.keys_seed.parent / "layouts/main.json").read_text()
-        )
+        layout_seed = json.loads(Path(seeds["layouts/main.json"]).read_text())
         layout_seed["terminal_padding"] = [16, 14]
         self.assertEqual(self.read("layouts/main.json"), layout_seed)
         palette = self.read("themes/nix-catppuccin-mocha.json")
