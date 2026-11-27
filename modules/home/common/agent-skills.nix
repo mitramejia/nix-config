@@ -1,8 +1,10 @@
 {
   inputs,
   lib,
+  unstablePkgs,
   ...
 }: let
+  herdrSource = unstablePkgs.herdr.src;
   cursorTeamKitSkills = [
     "cursor-team-kit/check-compiler-errors"
     "cursor-team-kit/control-cli"
@@ -70,7 +72,13 @@ in {
         };
 
         herdr = {
-          input = "herdr";
+          # The skill catalog reads this at evaluation time, including across platforms.
+          path =
+            (builtins.fetchTree {
+              type = "tarball";
+              inherit (herdrSource) url;
+              narHash = herdrSource.outputHash;
+            }).outPath;
           subdir = "skills";
           filter.maxDepth = 1;
         };

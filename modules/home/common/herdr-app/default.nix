@@ -13,6 +13,7 @@
       dark = "nix-catppuccin-mocha";
       light = "paper";
     };
+    "layouts/main.json".terminal_padding = [16 14];
     "keys.json".global = {
       "${prefix} ," = "app.settings";
       "${prefix} d" = "window.close";

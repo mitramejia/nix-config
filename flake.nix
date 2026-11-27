@@ -51,11 +51,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    herdr = {
-      url = "github:herdrdev/herdr/v0.8.2";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     darwin = {
       url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
       inputs.nixpkgs.follows = "nixpkgs";

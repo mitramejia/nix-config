@@ -142,6 +142,11 @@ class ReconcileTests(unittest.TestCase):
         for section, bindings in seed.items():
             for key, action in bindings.items():
                 self.assertEqual(self.read("keys.json")[section][key], action)
+        layout_seed = json.loads(
+            (self.keys_seed.parent / "layouts/main.json").read_text()
+        )
+        layout_seed["terminal_padding"] = [16, 14]
+        self.assertEqual(self.read("layouts/main.json"), layout_seed)
         palette = self.read("themes/nix-catppuccin-mocha.json")
         self.assertEqual(len(palette["ansi"]), 16)
         self.write(self.home / "settings.json", {"theme": "paper", "zoom": 1.5})

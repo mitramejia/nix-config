@@ -1,11 +1,11 @@
 {
   lib,
   pkgs,
-  inputs,
   unstablePkgs,
   ...
 }: let
-  herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  # Herdr is unavailable in stable nixpkgs.
+  herdrPackage = unstablePkgs.herdr;
   linkHerdrPlugin = pkgs.writeShellApplication {
     name = "link-herdr-plugin";
     runtimeInputs = [pkgs.coreutils pkgs.jq];
@@ -52,7 +52,6 @@ in {
   programs.herdr = {
     enable = true;
 
-    # Build the latest stable upstream release from its own flake.
     package = herdrPackage;
 
     settings = {
@@ -78,9 +77,14 @@ in {
         prompt_new_tab_name = false;
         pane_borders = true;
         pane_scrollbars = false;
-        pane_gaps = false;
+        pane_gaps = true;
         hide_tab_bar_when_single_tab = false;
         tab_bar_position = "bottom";
+        tab_bar_right = [{type = "zoom";}];
+        status_indicators = "symbols";
+        agent_panel_sort = "priority";
+        sidebar_start_collapsed = true;
+        sidebar_collapsed_mode = "compact";
       };
 
       keys = {
@@ -95,10 +99,20 @@ in {
         focus_pane_down = "prefix+j";
         focus_pane_up = "prefix+k";
         focus_pane_right = "prefix+l";
+        focus_agent = "prefix+alt+1..9";
+        last_pane = "prefix+backtick";
         copy_mode = "prefix+[";
         reload_config = "prefix+shift+r";
         resize_mode = "prefix+r";
         command = [
+          {
+            key = "prefix+t";
+            type = "popup";
+            command = "exec ${pkgs.zsh}/bin/zsh -i";
+            description = "Open a scratch terminal";
+            width = "80%";
+            height = "80%";
+          }
           {
             key = "ctrl+h";
             type = "plugin_action";

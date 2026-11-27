@@ -63,6 +63,10 @@ def write_object(path, value):
 def reconcile(home, state, defaults, keys_seed):
     previous = read_object(state)
     desired = read_object(defaults)
+    seeds = {
+        "keys.json": keys_seed,
+        "layouts/main.json": keys_seed.parent / "layouts/main.json",
+    }
     changes = []
     # Validate all files before making any changes; invalid app data is not lost.
     for name in sorted(previous.keys() | desired.keys()):
@@ -72,8 +76,8 @@ def reconcile(home, state, defaults, keys_seed):
         path = home / relative
         exists = path.exists()
         current = read_object(path)
-        if not exists and name == "keys.json":
-            current = read_object(keys_seed)
+        if not exists and name in seeds:
+            current = read_object(seeds[name])
         updated = merge(
             current,
             previous.get(name, {}) if exists else {},
