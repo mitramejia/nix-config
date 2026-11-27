@@ -33,7 +33,7 @@ Community release metadata can lag. These commands do not activate a generation.
 
 Back up existing browser configuration/profile directories. The read-only
 preflight refuses an unmanaged `profiles.ini` or a populated target profile
-without a Home Manager-owned `user.js`. **Stop and reconcile ownership explicitly**
+without Home Manager's `.keep` symlink. **Stop and reconcile ownership explicitly**
 if blocked; do not delete a profile or its private data to bypass the guard.
 The managed profile remains `default` across generations:
 

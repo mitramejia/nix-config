@@ -18,8 +18,9 @@ if { [ -e "$config_dir/profiles.ini" ] || [ -L "$config_dir/profiles.ini" ]; } &
   exit 1
 fi
 
+# Home Manager always creates .keep, even when no preferences need user.js.
 if [ -d "$profile_dir" ] && [ -n "$(ls -A "$profile_dir")" ] &&
-  ! managed_link "$profile_dir/user.js"; then
+  ! managed_link "$profile_dir/.keep"; then
   echo "Zen: refusing to adopt unmanaged $profile_dir. Back up and reconcile the existing profile before activation." >&2
   exit 1
 fi

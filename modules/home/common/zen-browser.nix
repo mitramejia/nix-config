@@ -68,7 +68,7 @@
 
       mkdir -p managed/default
       ln -s ${pkgs.writeText "zen-profile-fixture" "managed"} managed/profiles.ini
-      ln -s ${pkgs.writeText "zen-user-js-fixture" "managed"} managed/default/user.js
+      ln -s ${pkgs.writeText "zen-profile-keep-fixture" ""} managed/default/.keep
       echo 'preserve across rebuilds' > managed/default/prefs.js
       zen-profile-guard "$PWD/managed" "$PWD/managed/default"
       zen-profile-guard "$PWD/managed" "$PWD/managed/default"
