@@ -41,8 +41,8 @@
       fi
     '';
     shellAliases = {
-      fr = "nh darwin switch --hostname ${host.key} ${host.nixConfig}";
-      fu = "nh darwin switch --hostname ${host.key} --update ${host.nixConfig}";
+      fr = "nh darwin switch --no-nom --hostname ${host.key} ${host.nixConfig}";
+      fu = "nh darwin switch --no-nom --hostname ${host.key} --update ${host.nixConfig}";
       ls = lib.mkForce "eza --icons";
       ll = lib.mkForce "eza -lh --icons --grid --group-directories-first";
       la = lib.mkForce "eza -lah --icons --grid --group-directories-first";

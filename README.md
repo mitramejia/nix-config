@@ -232,7 +232,7 @@ nh os switch . -H nixos
 
 ```sh
 # macOS
-nh darwin switch . -H macos
+nh darwin switch --no-nom . -H macos
 ```
 
 The former macOS repository at `/home/mitra/WebstormProjects/macos-nix-config`
@@ -251,7 +251,7 @@ The aliases run:
 
 - Linux: `nh os boot --ask --hostname nixos --update` for `fu`; reboot to
   activate the prepared generation.
-- macOS: `nh darwin switch --hostname macos --update` for `fu`.
+- macOS: `nh darwin switch --no-nom --hostname macos --update` for `fu`.
 
 If an installed alias still invokes the removed release updater, activate this
 configuration once with `fr`, then open a new shell when ready to deploy.
