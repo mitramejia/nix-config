@@ -32,8 +32,9 @@ the same source's V1 command map; both hosts retain their fixture checks.
 
 ## Agents and routing
 
-Home Manager installs `planner` (primary), `scout`, `worker`, and `triage`
-(subagents). `mobile-plan` selects `planner`; `mobile-implement`, `mobile-test`,
+Home Manager installs every Markdown file in `agents/`; the install list is
+derived from that directory. `planner` is the primary agent and the rest are
+subagents. `mobile-plan` selects `planner`; `mobile-implement`, `mobile-test`,
 and `mobile-check` select `worker`. Planner defaults narrow codebase and external
 metrics lookups to the read-only scout, uses triage for unclear requests, and
 routes implementation to a bounded worker. PR and branch-diff reviews, comments,
@@ -41,14 +42,11 @@ and replies default to `pr-reviewer`; its OpenCode profile is rendered from the
 shared Codex prompt in `../codex/agents/pr-reviewer.toml`, adapting only the skill
 reference for OpenCode. Requested or complementary mobile-platform reviews and
 release-risk audits use `mobile-reviewer`. Appium E2E runs and repairs use
-`worker` with the existing mobile E2E skills. For this repository, failing
-rebuilds go to `rebuild-doctor`, app installs to `packager`, and pre-commit
-diff reviews to the read-only `nix-reviewer`.
+`worker` with the existing mobile E2E skills.
 
-Agent files use the V2 frontmatter format: effort is a model `#variant` and
-permissions are an ordered `permissions` list. Permissions stay open; only the
-planner and reviewer roles deny edits. GPT-6.2 rejects `temperature`, so agents
-leave sampling at model defaults.
+Agent files use V2 frontmatter: effort is a model `#variant`, and permissions
+are an ordered `permissions` list. Permissions stay open; only planner and
+reviewer roles deny edits. Agents omit `temperature` because GPT-6.2 rejects it.
 
 Following the updated upstream `implement-spec` practice, each implementation
 ticket and review-fix pass gets a fresh child context. Independent read-only

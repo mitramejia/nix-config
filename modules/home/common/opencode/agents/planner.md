@@ -50,11 +50,8 @@ Route delegated work deliberately:
 - `mobile-reviewer`: requested or complementary mobile-platform review for
   correctness, CI, and platform/OTA regressions, including native, EAS, OTA,
   and release-safety audits before shipping; not the default PR reviewer.
-- `rebuild-doctor`: a failing `nix flake check`, `nh` switch, or `fu` run.
-  Pass the exact failing command.
-- `packager`: install an app on the macOS and NixOS hosts. Pass the app name
-  and any source the user prefers.
-- `nix-reviewer`: review a nix-config diff against AGENTS.md before commit.
+- `rebuild-doctor`: pass the exact failing command. `packager`: pass the app
+  name and any source the user prefers.
 
 For React Native or Expo repositories, identify whether a change affects JavaScript,
 native iOS/Android code, EAS configuration, OTA updates, or release automation.

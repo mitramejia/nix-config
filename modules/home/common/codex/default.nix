@@ -66,12 +66,13 @@ in {
         pkgs.nodejs
       ];
 
-      file = {
-        ".codex/agents/commit-staged.toml".source = ./agents/commit-staged.toml;
-        ".codex/agents/pr-reviewer.toml".source = ./agents/pr-reviewer.toml;
-        ".codex/ollama-launch.config.toml".source = toml.generate "codex-ollama-launch-config.toml" profiles.ollamaLaunch;
-        ".codex/gpt-oss.config.toml".source = toml.generate "codex-gpt-oss-config.toml" profiles.gptOss;
-      };
+      file =
+        lib.mapAttrs' (file: _: lib.nameValuePair ".codex/agents/${file}" {source = ./agents + "/${file}";})
+        (lib.filterAttrs (file: type: type == "regular" && lib.hasSuffix ".toml" file) (builtins.readDir ./agents))
+        // {
+          ".codex/ollama-launch.config.toml".source = toml.generate "codex-ollama-launch-config.toml" profiles.ollamaLaunch;
+          ".codex/gpt-oss.config.toml".source = toml.generate "codex-gpt-oss-config.toml" profiles.gptOss;
+        };
 
       # Keep the main Codex config mutable so external tools can inject
       # provider and MCP blocks. The generated TOML is used only to seed the file.

@@ -10,33 +10,36 @@ import yaml
 
 
 manifest = json.load(open(sys.argv[1]))
-expected = {
-    "planner", "worker", "scout", "triage", "mobile-reviewer",
-    "rebuild-doctor", "packager", "nix-reviewer",
-    "pr-reviewer", "commit-staged",
-}
-read_only = expected - {"worker", "rebuild-doctor", "packager"}
-assert set(manifest["agents"]) == expected
-assert set(manifest["readOnlyNames"]) == read_only
+# Agents other config refers to by name: the default agent, commands, and the generated reviewer.
+assert {"planner", "worker", "pr-reviewer"} <= set(manifest["agents"])
+assert set(manifest["agents"]) == set(manifest["sources"])
 for name, text in manifest["agents"].items():
     _, frontmatter, body = text.split("---\n", 2)
     meta = yaml.safe_load(frontmatter)
+    read_only = manifest["sources"][name]["readOnly"]
     assert set(meta) == {"name", "description", "model", "permissionMode"} | (
-        {"disallowedTools"} if name in read_only else set()
+        {"disallowedTools"} if read_only else set()
     ), name
     assert meta["name"] == name and re.fullmatch(r"[a-z][a-z0-9-]*", name)
     assert meta["description"] == manifest["sources"][name]["description"]
     assert isinstance(meta["description"], str) and meta["description"]
     assert meta["model"] == "inherit" and meta["permissionMode"] == "default"
-    if name in read_only:
+    if read_only:
         assert meta["disallowedTools"] == ["Edit", "Write", "NotebookEdit"]
     original = manifest["sources"][name]
     if original["format"] == "toml":
         parsed = tomllib.loads(original["original"])
         source = parsed["developer_instructions"]
+        assert read_only, name
     else:
         _, header, source = original["original"].replace("\r\n", "\n").split("---\n", 2)
         parsed = yaml.safe_load(header)
+        # The Nix line scan must agree with the real YAML permissions.
+        denies_edit = any(
+            rule.get("action") == "edit" and rule.get("effect") == "deny"
+            for rule in parsed.get("permissions", [])
+        )
+        assert read_only == denies_edit, name
     assert meta["description"] == parsed["description"], name
     adapted = source.replace("$pr-review-style", "/pr-review-style").replace(
         "~/.codex/skills/pr-review-style/SKILL.md",
@@ -62,5 +65,5 @@ for skill_id, flat_name in zip(skill_ids, flat_names):
     deployed = (claude_bundle / flat_name / "SKILL.md").read_bytes()
     source = (Path(manifest["originalBundle"]) / skill_id / "SKILL.md").read_bytes()
     assert deployed == source, skill_id
-print(f"Validated all {len(expected)} Claude agents, source prompts, and permissions.")
+print(f"Validated all {len(manifest['agents'])} Claude agents, source prompts, and permissions.")
 print(f"Validated flat Claude coverage for all {len(skill_ids)} selected skills.")

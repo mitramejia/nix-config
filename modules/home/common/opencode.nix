@@ -528,26 +528,20 @@ in {
 
     xdg.configFile =
       lib.mapAttrs' (name: source: lib.nameValuePair "opencode/${name}" {inherit source;})
-      {
-        "agents/planner.md" = ./opencode/agents/planner.md;
-        "agents/worker.md" = ./opencode/agents/worker.md;
-        "agents/scout.md" = ./opencode/agents/scout.md;
-        "agents/triage.md" = ./opencode/agents/triage.md;
-        "agents/pr-reviewer.md" = prReviewerAgent;
-        "agents/mobile-reviewer.md" = ./opencode/agents/mobile-reviewer.md;
-        "agents/rebuild-doctor.md" = ./opencode/agents/rebuild-doctor.md;
-        "agents/packager.md" = ./opencode/agents/packager.md;
-        "agents/nix-reviewer.md" = ./opencode/agents/nix-reviewer.md;
-        "commands/mobile-implement.md" = ./opencode/commands/mobile-implement.md;
-        "commands/mobile-plan.md" = ./opencode/commands/mobile-plan.md;
-        "commands/mobile-review.md" = ./opencode/commands/mobile-review.md;
-        "commands/mobile-check.md" = ./opencode/commands/mobile-check.md;
-        "commands/mobile-test.md" = ./opencode/commands/mobile-test.md;
-        "commands/mobile-release-audit.md" = ./opencode/commands/mobile-release-audit.md;
-        "plugins/rtk.ts" = ./opencode/plugins/rtk.ts;
-        "plugins/browserstack-env.ts" = ./opencode/plugins/browserstack-env.ts;
-        "plugins/herdr-agent-state/tui.ts" = ./opencode/plugins/herdr-agent-state/tui.ts;
-      };
+      (lib.mapAttrs' (file: _: lib.nameValuePair "agents/${file}" (./opencode/agents + "/${file}"))
+        (lib.filterAttrs (file: type: type == "regular" && lib.hasSuffix ".md" file) (builtins.readDir ./opencode/agents))
+        // {
+          "agents/pr-reviewer.md" = prReviewerAgent;
+          "commands/mobile-implement.md" = ./opencode/commands/mobile-implement.md;
+          "commands/mobile-plan.md" = ./opencode/commands/mobile-plan.md;
+          "commands/mobile-review.md" = ./opencode/commands/mobile-review.md;
+          "commands/mobile-check.md" = ./opencode/commands/mobile-check.md;
+          "commands/mobile-test.md" = ./opencode/commands/mobile-test.md;
+          "commands/mobile-release-audit.md" = ./opencode/commands/mobile-release-audit.md;
+          "plugins/rtk.ts" = ./opencode/plugins/rtk.ts;
+          "plugins/browserstack-env.ts" = ./opencode/plugins/browserstack-env.ts;
+          "plugins/herdr-agent-state/tui.ts" = ./opencode/plugins/herdr-agent-state/tui.ts;
+        });
 
     # OpenCode rewrites both files at runtime: Headroom edits opencode.json, and
     # the vim mode toggle persists to V2 cli.json. This reconciler is their sole

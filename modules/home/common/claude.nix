@@ -41,7 +41,7 @@
       };
   });
   manifest = pkgs.writeText "claude-agents.json" (builtins.toJSON {
-    inherit (rendered) agents sources readOnlyNames;
+    inherit (rendered) agents sources;
     skillIds = builtins.attrNames claudeSelection;
     inherit flatNames;
     skillBundles = {
