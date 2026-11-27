@@ -12,9 +12,10 @@ import yaml
 manifest = json.load(open(sys.argv[1]))
 expected = {
     "planner", "worker", "scout", "triage", "mobile-reviewer",
+    "rebuild-doctor", "packager", "nix-reviewer",
     "pr-reviewer", "commit-staged",
 }
-read_only = expected - {"worker"}
+read_only = expected - {"worker", "rebuild-doctor", "packager"}
 assert set(manifest["agents"]) == expected
 assert set(manifest["readOnlyNames"]) == read_only
 for name, text in manifest["agents"].items():

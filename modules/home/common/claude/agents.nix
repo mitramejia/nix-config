@@ -22,9 +22,9 @@
     inherit (agent) description;
     body = agent.developer_instructions;
   };
-  markdownNames = ["planner" "worker" "scout" "triage" "mobile-reviewer"];
+  markdownNames = ["planner" "worker" "scout" "triage" "mobile-reviewer" "rebuild-doctor" "packager" "nix-reviewer"];
   tomlNames = ["pr-reviewer" "commit-staged"];
-  readOnlyNames = ["planner" "scout" "triage" "mobile-reviewer" "pr-reviewer" "commit-staged"];
+  readOnlyNames = ["planner" "scout" "triage" "mobile-reviewer" "nix-reviewer" "pr-reviewer" "commit-staged"];
   sources =
     lib.genAttrs markdownNames (name: fromMarkdown (../opencode/agents + "/${name}.md"))
     // lib.genAttrs tomlNames (name: fromToml (../codex/agents + "/${name}.toml"));

@@ -535,6 +535,9 @@ in {
         "agents/triage.md" = ./opencode/agents/triage.md;
         "agents/pr-reviewer.md" = prReviewerAgent;
         "agents/mobile-reviewer.md" = ./opencode/agents/mobile-reviewer.md;
+        "agents/rebuild-doctor.md" = ./opencode/agents/rebuild-doctor.md;
+        "agents/packager.md" = ./opencode/agents/packager.md;
+        "agents/nix-reviewer.md" = ./opencode/agents/nix-reviewer.md;
         "commands/mobile-implement.md" = ./opencode/commands/mobile-implement.md;
         "commands/mobile-plan.md" = ./opencode/commands/mobile-plan.md;
         "commands/mobile-review.md" = ./opencode/commands/mobile-review.md;

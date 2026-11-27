@@ -41,7 +41,14 @@ and replies default to `pr-reviewer`; its OpenCode profile is rendered from the
 shared Codex prompt in `../codex/agents/pr-reviewer.toml`, adapting only the skill
 reference for OpenCode. Requested or complementary mobile-platform reviews and
 release-risk audits use `mobile-reviewer`. Appium E2E runs and repairs use
-`worker` with the existing mobile E2E skills.
+`worker` with the existing mobile E2E skills. For this repository, failing
+rebuilds go to `rebuild-doctor`, app installs to `packager`, and pre-commit
+diff reviews to the read-only `nix-reviewer`.
+
+Agent files use the V2 frontmatter format: effort is a model `#variant` and
+permissions are an ordered `permissions` list. Permissions stay open; only the
+planner and reviewer roles deny edits. GPT-6.2 rejects `temperature`, so agents
+leave sampling at model defaults.
 
 Following the updated upstream `implement-spec` practice, each implementation
 ticket and review-fix pass gets a fresh child context. Independent read-only
