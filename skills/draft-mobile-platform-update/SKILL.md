@@ -1,6 +1,6 @@
 ---
 name: draft-mobile-platform-update
-description: "Draft weekly Comun Mobile Platform project update messages. Use when asked to create a weekly status/project update for the Mobile Platform owner by gathering recently merged PRs from the mobile repository and recent Slack conversations from #engineering-frontend and #app-status, then summarizing ongoing projects, Wins, Next Steps, estimated ship timing, roadmap changes, and larger-project timelines."
+description: "Draft weekly Comun Mobile Platform owner status/project updates from merged mobile PRs and Slack (#engineering-frontend, #app-status), covering project progress, next steps, ship timing, roadmap changes, and larger-project timelines."
 ---
 
 # Draft Mobile Platform Update

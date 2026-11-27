@@ -1,6 +1,6 @@
 ---
 name: gh-open-pr-template
-description: Open a GitHub pull request from the current branch using `.github/pull_request_template.md`, generate a short PR title from branch commits with required `[ISSUE-123]` prefix parsed from branch name, apply the `Platform` label, assign `mitramejia` as assignee, and collect/improve user-provided testing steps for the `Testing Notes` section. Use when a user asks to create/open a PR with this repo's template and metadata conventions.
+description: Create/open a GitHub PR from the current branch with this repo's template and metadata conventions, deriving its title from commits and refining user-provided testing notes.
 ---
 
 # GH Open PR Template
