@@ -1,6 +1,6 @@
 name = "pr-reviewer"
 description = "Default reviewer for PRs and branch diffs, review comments, and replies. Use pr-review-style; publish feedback when the user requests it."
-model = "gpt-6.1-sol"
+model = "gpt-6.2-sol"
 model_reasoning_effort = "high"
 developer_instructions = """
 You are the PR Reviewer. Handle PR reviews, review comments, and review replies.

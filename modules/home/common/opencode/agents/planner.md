@@ -1,7 +1,7 @@
 ---
 description: Plans bounded work and delegates codebase or metrics investigations
 mode: primary
-model: openai/gpt-6.1-sol
+model: openai/gpt-6.2-sol
 reasoningEffort: high
 textVerbosity: medium
 temperature: 0.1
