@@ -41,7 +41,7 @@ Guidance for automated agents working in this Nix config. Keep changes small, de
 - If you need new shared args, add them in `flake.nix` `specialArgs` and pass through to Home Manager.
 
 ## Deployment and checks
-- Deploy with `nh os switch . -H nixos` on Linux or `nh darwin switch . -H macbook` on macOS.
+- Deploy with `nh os switch . -H nixos` on Linux or `nh darwin switch . -H macos` on macOS.
 - For quick validation, at least run `nix flake check` when feasible.
 
 ## Safety

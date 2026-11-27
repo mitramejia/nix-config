@@ -26,7 +26,7 @@ to work around an error.
   preserve local changes and fix the failure before repeating the step.
   Do not reset, clean or autoformat the repository.
 
-### Apple Silicon Mac (`macbook`)
+### Apple Silicon Mac (`macos`)
 
 1. **Human gate:** finish macOS Setup Assistant with an administrator account
    named `mitramejia`. Install Apple's Command Line Tools and complete the
@@ -73,7 +73,7 @@ to work around an error.
 
    ```sh
    nix run --no-update-lock-file .#validate
-   nix build --no-update-lock-file .#darwinConfigurations.macbook.system
+   nix build --no-update-lock-file .#darwinConfigurations.macos.system
    ```
 
    **Validation gate:** pre-existing formatting differences currently fail
@@ -87,7 +87,7 @@ to work around an error.
 5. Bootstrap nix-darwin from the locked `darwin` input:
 
    ```sh
-   sudo nix run --no-update-lock-file --inputs-from . darwin#darwin-rebuild -- switch --flake .#macbook
+   sudo nix run --no-update-lock-file --inputs-from . darwin#darwin-rebuild -- switch --flake .#macos
    ```
 
    Home Manager is integrated; do not run a separate `home-manager switch`.
@@ -220,7 +220,7 @@ approvals remain manual; a build alone does not establish completion.
 | Configuration key | System | Hostname | User | System state | Home Manager state |
 | --- | --- | --- | --- | --- | --- |
 | `nixos` | `x86_64-linux` | `nixos` | `mitra` | `24.11` | `23.11` |
-| `macbook` | `aarch64-darwin` | `MitraMacBook` | `mitramejia` | `4` | `23.11` |
+| `macos` | `aarch64-darwin` | `MitraMacBook` | `mitramejia` | `4` | `23.11` |
 
 The configuration key selects a host in the flake and `nh`; it need not match
 the hostname. From the repository root, run only the local machine's command:
@@ -232,7 +232,7 @@ nh os switch . -H nixos
 
 ```sh
 # macOS
-nh darwin switch . -H macbook
+nh darwin switch . -H macos
 ```
 
 The former macOS repository at `/home/mitra/WebstormProjects/macos-nix-config`
@@ -251,7 +251,7 @@ The aliases run:
 
 - Linux: `nh os boot --ask --hostname nixos --update` for `fu`; reboot to
   activate the prepared generation.
-- macOS: `nh darwin switch --hostname macbook --update` for `fu`.
+- macOS: `nh darwin switch --hostname macos --update` for `fu`.
 
 If an installed alias still invokes the removed release updater, activate this
 configuration once with `fr`, then open a new shell when ready to deploy.
@@ -278,7 +278,7 @@ File enumeration failure stops validation. Otherwise, it attempts every check:
 
 - Nix formatting, including pre-existing differences.
 - `nixosConfigurations.nixos.config.system.build.toplevel.drvPath` evaluation.
-- `darwinConfigurations.macbook.system.drvPath` evaluation.
+- `darwinConfigurations.macos.system.drvPath` evaluation.
 - Native `nix flake check`.
 
 Any failure produces a nonzero exit. No stage implicitly updates the lock, uses
@@ -296,7 +296,7 @@ nix build --no-link --no-update-lock-file .#nixosConfigurations.nixos.config.sys
 
 ```sh
 # Darwin builder
-nix build --no-link --no-update-lock-file .#darwinConfigurations.macbook.system
+nix build --no-link --no-update-lock-file .#darwinConfigurations.macos.system
 ```
 
 ## Claude Code agents and skills
@@ -321,7 +321,7 @@ Run the focused generation and skill-parity check without activation:
 
 ```sh
 # macOS
-nix build --no-link --no-update-lock-file .#darwinConfigurations.macbook.config.home-manager.users.mitramejia.private.claudeAgentsCheck
+nix build --no-link --no-update-lock-file .#darwinConfigurations.macos.config.home-manager.users.mitramejia.private.claudeAgentsCheck
 ```
 
 ```sh

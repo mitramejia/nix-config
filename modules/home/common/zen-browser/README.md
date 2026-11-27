@@ -17,10 +17,10 @@ From the repository root, review existing lockfile edits before updating:
 
 ```sh
 nix flake update zen-browser
-nix eval --raw --no-update-lock-file .#darwinConfigurations.macbook.system.drvPath
+nix eval --raw --no-update-lock-file .#darwinConfigurations.macos.system.drvPath
 nix eval --raw --no-update-lock-file .#nixosConfigurations.nixos.config.system.build.toplevel.drvPath
 nix flake check --no-update-lock-file
-nix build --no-link --no-update-lock-file .#darwinConfigurations.macbook.system
+nix build --no-link --no-update-lock-file .#darwinConfigurations.macos.system
 # On a Linux machine/builder:
 nix build --no-link --no-update-lock-file .#nixosConfigurations.nixos.config.system.build.toplevel
 ```

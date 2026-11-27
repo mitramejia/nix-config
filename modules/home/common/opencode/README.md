@@ -85,8 +85,8 @@ No plugin SDK dependency is installed into the user's config. OpenCode resolves
 ## Checks (no activation)
 
 ```sh
-nix build --no-link --impure --expr '(builtins.getFlake (toString ./.)).darwinConfigurations.macbook.config.home-manager.users.mitramejia.private.openCodeMutableConfigCheck'
-nix build --no-link --impure --expr '(builtins.getFlake (toString ./.)).darwinConfigurations.macbook.config.home-manager.users.mitramejia.programs.opencode.package.localPluginsCheck'
+nix build --no-link --impure --expr '(builtins.getFlake (toString ./.)).darwinConfigurations.macos.config.home-manager.users.mitramejia.private.openCodeMutableConfigCheck'
+nix build --no-link --impure --expr '(builtins.getFlake (toString ./.)).darwinConfigurations.macos.config.home-manager.users.mitramejia.programs.opencode.package.localPluginsCheck'
 ```
 
 The local-plugin check uses the pinned public API types, real RTK subprocesses
@@ -127,7 +127,7 @@ be Git-visible; intent-to-add (`git add -N`) is sufficient during review and
 does not stage their contents. Verify without activation:
 
 ```sh
-nix eval --raw .#darwinConfigurations.macbook.config.home-manager.users.mitramejia.programs.opencode.package.outPath
+nix eval --raw .#darwinConfigurations.macos.config.home-manager.users.mitramejia.programs.opencode.package.outPath
 nix flake check --no-update-lock-file
 git diff --check
 ```
@@ -142,8 +142,8 @@ This changes live configuration without a system switch. Back up the files
 first; do not execute it as part of a validation task.
 
 ```sh
-reconciler=$(nix build --no-link --print-out-paths --impure --expr '(builtins.getFlake (toString ./.)).darwinConfigurations.macbook.config.home-manager.users.mitramejia.private.openCodeMutableConfigCheck.reconciler')
-intent=$(nix build --no-link --print-out-paths --impure --expr '(builtins.getFlake (toString ./.)).darwinConfigurations.macbook.config.home-manager.users.mitramejia.private.openCodeMutableConfigCheck.intentFile')
+reconciler=$(nix build --no-link --print-out-paths --impure --expr '(builtins.getFlake (toString ./.)).darwinConfigurations.macos.config.home-manager.users.mitramejia.private.openCodeMutableConfigCheck.reconciler')
+intent=$(nix build --no-link --print-out-paths --impure --expr '(builtins.getFlake (toString ./.)).darwinConfigurations.macos.config.home-manager.users.mitramejia.private.openCodeMutableConfigCheck.intentFile')
 "$reconciler/bin/opencode-reconcile-mutable-config" "${XDG_CONFIG_HOME:-$HOME/.config}/opencode" "$intent"
 ```
 

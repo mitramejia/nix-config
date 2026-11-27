@@ -138,8 +138,8 @@
         systemStateVersion = "24.11";
         homeStateVersion = "23.11";
       };
-      macbook = {
-        key = "macbook";
+      macos = {
+        key = "macos";
         platform = "darwin";
         system = "aarch64-darwin";
         hostname = "MitraMacBook";
@@ -223,10 +223,10 @@
     hyprlandKeybindingIntentCheck = nixosHome.private.hyprlandKeybindingIntent.check;
     hyprlandWorkspaceStartupCheck = nixosHome.private.hyprlandExecOnce.workspaceStartupCheck;
     darwinHost = darwin.lib.darwinSystem {
-      system = hosts.macbook.system;
+      system = hosts.macos.system;
       specialArgs = {
-        host = hosts.macbook;
-        unstablePkgs = mkUnstablePkgs hosts.macbook.system;
+        host = hosts.macos;
+        unstablePkgs = mkUnstablePkgs hosts.macos.system;
         inherit inputs;
       };
       modules = [
@@ -236,9 +236,9 @@
         ./modules/darwin
       ];
     };
-    darwinHome = darwinHost.config.home-manager.users.${hosts.macbook.username};
+    darwinHome = darwinHost.config.home-manager.users.${hosts.macos.username};
 
-    forSupportedSystems = nixpkgs.lib.genAttrs [hosts.nixos.system hosts.macbook.system];
+    forSupportedSystems = nixpkgs.lib.genAttrs [hosts.nixos.system hosts.macos.system];
     validationPkgs = forSupportedSystems (system: import nixpkgs {inherit system;});
     validators = forSupportedSystems (system: let
       pkgs = validationPkgs.${system};
@@ -277,7 +277,7 @@
           run_check 'NixOS derivation evaluation' nix eval --raw --no-update-lock-file \
             .#nixosConfigurations.nixos.config.system.build.toplevel.drvPath
           run_check 'Darwin derivation evaluation' nix eval --raw --no-update-lock-file \
-            .#darwinConfigurations.macbook.system.drvPath
+            .#darwinConfigurations.macos.system.drvPath
           run_check 'Native flake checks' nix flake check --no-update-lock-file
           exit "$status"
         '';
@@ -298,13 +298,13 @@
       zen-browser-config = nixosHome.private.zenBrowserCheck;
     };
 
-    checks.${hosts.macbook.system} = {
+    checks.${hosts.macos.system} = {
       herdr-app-mutable-config = darwinHome.private.herdrAppConfigCheck;
       mcp-catalog-adapters = darwinHome.private.mcpCatalogAdaptersCheck;
       opencode-mutable-config-darwin = darwinHome.private.openCodeMutableConfigCheck;
       zen-browser-config = darwinHome.private.zenBrowserCheck;
     };
 
-    darwinConfigurations.macbook = darwinHost;
+    darwinConfigurations.macos = darwinHost;
   };
 }
