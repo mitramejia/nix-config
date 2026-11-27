@@ -30,6 +30,16 @@ passthru attributes. The check uses the unstable package's `src` and
 `node_modules`, with `unstablePkgs.bun`. Mutable configuration migration uses
 the same source's V1 command map; both hosts retain their fixture checks.
 
+## Headroom launcher
+
+`oc` launches OpenCode through Headroom with `--auto` when called without
+arguments. Arguments are passed to OpenCode as written, so `oc run …` and
+`oc --auto --prompt …` work as well. Headroom is installed separately via uv.
+
+The launcher in [opencode.nix](../opencode.nix) uses a dedicated proxy on
+port 18788 with `HEADROOM_NO_CCR_RESPONSE_HANDLING=1`. This keeps request
+compression enabled while preserving the streaming required by ChatGPT OAuth.
+
 ## Agents and routing
 
 Home Manager installs every Markdown file in `agents/`; the install list is

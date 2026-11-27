@@ -26,6 +26,20 @@
       prReviewer.developer_instructions}
   '';
   upstreamPackage = unstablePkgs.opencode;
+  launcher = pkgs.writeShellApplication {
+    name = "oc";
+    runtimeInputs = [opencodePackage];
+    text = ''
+      if [ "$#" -eq 0 ]; then
+        set -- --auto
+      fi
+
+      # ChatGPT OAuth requires streaming. Use a dedicated proxy so the
+      # buffering override only applies to OpenCode.
+      export HEADROOM_NO_CCR_RESPONSE_HANDLING=1
+      exec headroom wrap opencode --port 18788 -- "$@"
+    '';
+  };
   opencodePackage = upstreamPackage.overrideAttrs (old: {
     passthru =
       (old.passthru or {})
@@ -546,6 +560,7 @@ in {
       package = opencodePackage;
       enableMcpIntegration = true;
     };
+    home.packages = [launcher];
 
     xdg.configFile =
       lib.mapAttrs' (name: source: lib.nameValuePair "opencode/${name}" {inherit source;})
