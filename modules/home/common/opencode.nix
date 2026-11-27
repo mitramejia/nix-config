@@ -81,6 +81,10 @@
   json = pkgs.formats.json {};
   mcpServers = (import ./opencode-mcp-servers.nix {inherit lib;}).opencode;
   tuiPlugins = ["vimcode@git+https://github.com/oribarilan/vimcode.git#v0.19.1"];
+  cliTheme = {
+    name = "system";
+    mode = "system";
+  };
   platform = config.private.openCodeMutableConfigPlatform;
   openCodeSeed =
     {
@@ -106,12 +110,14 @@
     }
     {
       name = "cli.json";
+      forceKeys = {theme = cliTheme;};
       plugins = tuiPlugins ++ platform.tui.plugins;
       removePlugins = ["@leohenon/opencode-vim-plugin"];
       replacePluginPrefixes = ["vimcode@git+https://github.com/oribarilan/vimcode.git"];
       seed =
         {
           "$schema" = "https://opencode.ai/v2/cli.json";
+          theme = cliTheme;
           plugins = tuiPlugins ++ platform.tui.plugins;
         }
         // platform.tui.seed;
@@ -281,7 +287,8 @@
                const tui = JSON.parse(fs.readFileSync("fixture/cli.json"));
               assert.deepEqual(opencode, intent[0].seed);
               assert.equal(opencode.default_agent, "planner");
-              assert.deepEqual(tui, intent[1].seed);
+               assert.deepEqual(tui, intent[1].seed);
+               assert.deepEqual(tui.theme, intent[1].forceKeys.theme);
             '
             node -e '
               const fs = require("fs");
@@ -307,6 +314,7 @@
                 }
               }));
                fs.writeFileSync("fixture/cli.json", JSON.stringify({
+                 theme: {name: "tokyonight", mode: "dark"},
                  keybinds: {leader: "comma", "session.new": "ctrl+n"},
                  terminal: {copy: "manual"},
                  scroll: {speed: 7},
@@ -357,7 +365,7 @@
                assert.equal(tui.keybinds["session.new"], "ctrl+n");
                assert.equal(tui.keybinds["input.move.left"], "ctrl+h");
                assert.deepEqual(tui.terminal, {copy: "manual"});
-               assert.deepEqual(tui.theme, {name: "user-theme"});
+               assert.deepEqual(tui.theme, intent[1].forceKeys.theme);
                assert.equal(tui.mouse, false);
                assert.deepEqual(tui.leader, {timeout: 1234});
                assert.deepEqual(tui.scroll, {speed: 7, acceleration: true});
@@ -406,7 +414,13 @@
             '
             rm "$fixture/cli.json"
             ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}
-            node -e 'const c = require("./fixture/cli.json"); require("assert").equal(c.keybinds["session.new"], "ctrl+t");'
+            node -e '
+              const assert = require("assert");
+              const intent = require("${mutableConfigIntentFile}");
+              const c = require("./fixture/cli.json");
+              assert.equal(c.keybinds["session.new"], "ctrl+t");
+              assert.deepEqual(c.theme, intent[1].forceKeys.theme);
+            '
             rm "$fixture/cli.json"
             ln -s ${json.generate "opencode-home-manager-cli" (builtins.elemAt mutableConfigIntent 1).seed} "$fixture/cli.json"
             ${lib.getExe mutableConfigReconciler} "$fixture" ${mutableConfigIntentFile}

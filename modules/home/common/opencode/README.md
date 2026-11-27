@@ -12,6 +12,9 @@ the pinned upstream command map supplies V1-to-V2 names. File-backed theme,
 mouse, cursor, attention, leader timing, scroll and stacked-diff preferences
 are migrated without overwriting CLI preferences. `tui.json` is left as a
 migration backup; `state/kv.json` is not migrated by this reconciler.
+Theme is an intentional exception: each activation sets `theme.name` and
+`theme.mode` to `system`, overriding saved CLI and migrated V1 themes so OpenCode
+inherits the terminal's foreground, background, ANSI palette and light/dark mode.
 Other legacy server settings remain intact for upstream's
 V1 compatibility normalizer. User-managed symlinks are never rewritten;
 previous Nix-store links are replaced with mutable files, retaining their data.
