@@ -9,4 +9,9 @@
   "discord"
   "obsidian"
   "google-chrome"
+  "chatgpt"
+  "claude"
+  "reader"
+  "readwise-ibooks"
+  "ardia"
 ]
