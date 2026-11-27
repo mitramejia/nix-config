@@ -1,6 +1,6 @@
 ---
 name: stage-commit-push
-description: Stage selected repository changes, create a convention-compliant commit, and optionally push it. Use when the user asks to stage files, commit work, push a branch, or complete a stage-commit-push workflow.
+description: Stage selected repository changes, create one or several atomic convention-compliant commits, and optionally push them. Use when the user asks to stage files, commit work, push a branch, or complete a stage-commit-push workflow.
 ---
 
 # Stage, Commit, Push
@@ -21,12 +21,15 @@ Give the worker the user request and these requirements:
    staging. Do not stage unrelated work.
 3. Recheck the staged diff, use `scripts/commit_context.py` to summarize it,
    run focused checks appropriate to the staged files, and create one commit
-   using the repository convention.
+   using the repository convention. When the user asks for multiple commits,
+   group the changes into atomic commits, one logical change each, staging and
+   committing each group in turn; done when every selected hunk belongs to
+   exactly one commit.
 4. Push only when the user requested a push. Push the current branch to its
    configured upstream; if none exists, set an upstream only when the remote
    and target branch are unambiguous. Otherwise, report the blocker.
-5. Return the commit hash, message, committed files, checks run, and push
-   result.
+5. Return each commit's hash, message, and committed files, plus checks run
+   and the push result.
 
 The main agent must not stage, unstage, commit, amend, push, or spawn another
 agent for this workflow.
